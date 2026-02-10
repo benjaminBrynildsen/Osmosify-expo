@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.osmosify.app",
+      "bundleIdentifier": "com.osmosify.learning",
       "buildNumber": "1.0.0",
       "infoPlist": {
         "NSCameraUsageDescription": "Osmosify uses your camera to photograph book pages for text extraction.",
