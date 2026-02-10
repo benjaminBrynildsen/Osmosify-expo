@@ -1,13 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import type { 
-  Child, 
-  Word, 
-  ReadingSession, 
-  Book, 
+import type {
+  Child,
+  Word,
+  ReadingSession,
+  Book,
   PresetWordList,
-  ChildBookProgress 
+  ChildBookProgress
 } from '../types';
+import { PRESET_BOOKS } from '../data/presetBooks';
 
 const STORAGE_KEYS = {
   CHILDREN: '@osmosify:children',
@@ -147,7 +149,26 @@ export const saveSession = async (session: ReadingSession): Promise<void> => {
 };
 
 // Books
+const PRESET_BOOKS_KEY = '@osmosify:presetBooksInitialized_v1';
+
+const initializePresetBooks = async (): Promise<void> => {
+  const initialized = await AsyncStorage.getItem(PRESET_BOOKS_KEY);
+  if (initialized) return;
+
+  const existing = await getItem<Book>(STORAGE_KEYS.BOOKS);
+  const now = new Date().toISOString();
+  const presetBooks: Book[] = PRESET_BOOKS.map(b => ({
+    ...b,
+    id: uuidv4(),
+    createdAt: now,
+  }));
+
+  await setItem(STORAGE_KEYS.BOOKS, [...existing, ...presetBooks]);
+  await AsyncStorage.setItem(PRESET_BOOKS_KEY, 'true');
+};
+
 export const getBooks = async (): Promise<Book[]> => {
+  await initializePresetBooks();
   return getItem<Book>(STORAGE_KEYS.BOOKS);
 };
 

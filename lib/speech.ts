@@ -1,12 +1,24 @@
 import * as Speech from 'expo-speech';
 
+// Dynamic import for speech recognition - may not be available in Expo Go
+let ExpoSpeechRecognition: any = null;
+let useSpeechRecognitionEvent: any = null;
+
+try {
+  const mod = require('expo-speech-recognition');
+  ExpoSpeechRecognition = mod.ExpoSpeechRecognitionModule;
+  useSpeechRecognitionEvent = mod.useSpeechRecognitionEvent;
+} catch {
+  // Not available (e.g. Expo Go) - speech recognition will be disabled
+}
+
 export type VoiceOption = 'alloy' | 'nova' | 'shimmer';
 
 let isSpeaking = false;
 
 export async function speak(text: string, options?: { rate?: number; onEnd?: () => void }): Promise<void> {
   const rate = options?.rate ?? 0.85;
-  
+
   if (isSpeaking) {
     await Speech.stop();
     isSpeaking = false;
@@ -43,10 +55,7 @@ export function isVoiceAvailable(): boolean {
   return true; // Expo Speech is always available
 }
 
-// Speech Recognition (for Lava Letters)
-// Note: In a real app, you'd use expo-speech-recognition or a custom module
-// For this implementation, we'll provide a mock that can be replaced
-
+// Speech Recognition
 export interface RecognitionResult {
   transcript: string;
   confidence: number;
@@ -61,9 +70,17 @@ export interface MultiWordMatch {
 }
 
 export function isSpeechRecognitionSupported(): boolean {
-  // Speech recognition would require expo-speech-recognition module
-  // For now, return false to disable voice features
-  return false;
+  return ExpoSpeechRecognition != null;
+}
+
+export async function requestSpeechPermission(): Promise<boolean> {
+  if (!ExpoSpeechRecognition) return false;
+  try {
+    const result = await ExpoSpeechRecognition.requestPermissionsAsync();
+    return result.granted;
+  } catch {
+    return false;
+  }
 }
 
 export function startListening(
@@ -73,11 +90,72 @@ export function startListening(
   onError: (error: string) => void,
   onEnd: () => void
 ): { stop: () => void; updateTargetWord: (newWord: string) => void } {
-  // Mock implementation - would need expo-speech-recognition
-  return {
-    stop: () => {},
-    updateTargetWord: () => {},
+  if (!ExpoSpeechRecognition) {
+    onError('Speech recognition not available');
+    onEnd();
+    return { stop: () => {}, updateTargetWord: () => {} };
+  }
+
+  let currentTarget = targetWord;
+  let stopped = false;
+
+  const handleResult = (event: any) => {
+    if (stopped) return;
+    const results = event.results;
+    if (!results || results.length === 0) return;
+
+    const lastResult = results[results.length - 1];
+    if (!lastResult || lastResult.length === 0) return;
+
+    const transcript = lastResult[0].transcript || '';
+    const confidence = lastResult[0].confidence || 0;
+    const isMatch = checkWordMatch(transcript, currentTarget);
+
+    const result: RecognitionResult = { transcript, confidence, isMatch };
+
+    if (isMatch) {
+      onMatch(result);
+    } else if (lastResult.isFinal) {
+      onNoMatch(result);
+    }
   };
+
+  try {
+    ExpoSpeechRecognition.start({
+      lang: 'en-US',
+      interimResults: true,
+      maxAlternatives: 3,
+      continuous: false,
+    });
+
+    // Set up event listeners via the native module
+    const resultSub = ExpoSpeechRecognition.addListener('result', handleResult);
+    const errorSub = ExpoSpeechRecognition.addListener('error', (e: any) => {
+      if (!stopped) onError(e.error || 'Recognition error');
+    });
+    const endSub = ExpoSpeechRecognition.addListener('end', () => {
+      if (!stopped) onEnd();
+    });
+
+    return {
+      stop: () => {
+        stopped = true;
+        try {
+          ExpoSpeechRecognition.stop();
+        } catch {}
+        resultSub?.remove?.();
+        errorSub?.remove?.();
+        endSub?.remove?.();
+      },
+      updateTargetWord: (newWord: string) => {
+        currentTarget = newWord;
+      },
+    };
+  } catch (err: any) {
+    onError(err?.message || 'Failed to start recognition');
+    onEnd();
+    return { stop: () => {}, updateTargetWord: () => {} };
+  }
 }
 
 export function startContinuousListening(
@@ -88,11 +166,105 @@ export function startContinuousListening(
   onEnd: () => void,
   onAllMatches?: (matches: MultiWordMatch[], markWordMatched: (wordIndex: number) => void) => void
 ): { stop: () => void; updateTargetWords: (words: string[]) => void } {
-  // Mock implementation - would need expo-speech-recognition
-  return {
-    stop: () => {},
-    updateTargetWords: () => {},
+  if (!ExpoSpeechRecognition) {
+    onError('Speech recognition not available');
+    onEnd();
+    return { stop: () => {}, updateTargetWords: () => {} };
+  }
+
+  let currentTargets = [...targetWords];
+  let matchedIndices = new Set<number>();
+  let stopped = false;
+
+  const handleResult = (event: any) => {
+    if (stopped) return;
+    const results = event.results;
+    if (!results || results.length === 0) return;
+
+    const lastResult = results[results.length - 1];
+    if (!lastResult || lastResult.length === 0) return;
+
+    const transcript = lastResult[0].transcript || '';
+    const confidence = lastResult[0].confidence || 0;
+
+    onInterimResult(transcript);
+
+    const allMatches: MultiWordMatch[] = [];
+    const spoken = transcript.toLowerCase().split(/\s+/);
+
+    currentTargets.forEach((word, index) => {
+      if (matchedIndices.has(index)) return;
+      for (const s of spoken) {
+        if (checkWordMatch(s, word)) {
+          const match: MultiWordMatch = { word, index, transcript, confidence };
+          allMatches.push(match);
+          break;
+        }
+      }
+    });
+
+    if (allMatches.length > 0 && onAllMatches) {
+      onAllMatches(allMatches, (wordIndex: number) => {
+        matchedIndices.add(wordIndex);
+      });
+    }
+
+    for (const match of allMatches) {
+      if (!matchedIndices.has(match.index)) {
+        matchedIndices.add(match.index);
+        onWordMatch(match);
+      }
+    }
   };
+
+  try {
+    ExpoSpeechRecognition.start({
+      lang: 'en-US',
+      interimResults: true,
+      maxAlternatives: 3,
+      continuous: true,
+    });
+
+    const resultSub = ExpoSpeechRecognition.addListener('result', handleResult);
+    const errorSub = ExpoSpeechRecognition.addListener('error', (e: any) => {
+      if (!stopped) onError(e.error || 'Recognition error');
+    });
+    const endSub = ExpoSpeechRecognition.addListener('end', () => {
+      if (!stopped) {
+        // Restart continuous listening
+        try {
+          ExpoSpeechRecognition.start({
+            lang: 'en-US',
+            interimResults: true,
+            maxAlternatives: 3,
+            continuous: true,
+          });
+        } catch {
+          onEnd();
+        }
+      }
+    });
+
+    return {
+      stop: () => {
+        stopped = true;
+        try {
+          ExpoSpeechRecognition.stop();
+        } catch {}
+        resultSub?.remove?.();
+        errorSub?.remove?.();
+        endSub?.remove?.();
+      },
+      updateTargetWords: (words: string[]) => {
+        currentTargets = [...words];
+        matchedIndices = new Set();
+      },
+    };
+  } catch (err: any) {
+    onError(err?.message || 'Failed to start recognition');
+    onEnd();
+    return { stop: () => {}, updateTargetWords: () => {} };
+  }
 }
 
 // Homophones map for fuzzy matching
@@ -144,15 +316,15 @@ function areHomophones(word1: string, word2: string): boolean {
 
 function levenshteinDistance(a: string, b: string): number {
   const matrix: number[][] = [];
-  
+
   for (let i = 0; i <= b.length; i++) {
     matrix[i] = [i];
   }
-  
+
   for (let j = 0; j <= a.length; j++) {
     matrix[0][j] = j;
   }
-  
+
   for (let i = 1; i <= b.length; i++) {
     for (let j = 1; j <= a.length; j++) {
       if (b.charAt(i - 1) === a.charAt(j - 1)) {
@@ -166,43 +338,35 @@ function levenshteinDistance(a: string, b: string): number {
       }
     }
   }
-  
+
   return matrix[b.length][a.length];
 }
 
 export function checkWordMatch(spoken: string, target: string): boolean {
   const cleanSpoken = spoken.replace(/[.,!?'"]/g, '').trim().toLowerCase();
   const cleanTarget = target.replace(/[.,!?'"]/g, '').trim().toLowerCase();
-  
+
   if (cleanSpoken === cleanTarget) return true;
   if (areHomophones(cleanSpoken, cleanTarget)) return true;
-  
+
   const spokenWords = cleanSpoken.split(/\s+/);
   if (spokenWords.includes(cleanTarget)) return true;
-  
+
   for (const word of spokenWords) {
     if (areHomophones(word, cleanTarget)) return true;
   }
-  
+
   const distance = levenshteinDistance(cleanSpoken, cleanTarget);
   const maxAllowedDistance = Math.max(1, Math.floor(cleanTarget.length * 0.35));
   if (distance <= maxAllowedDistance) return true;
-  
+
   return false;
 }
 
-// Audio context for success sounds
-let audioContext: AudioContext | null = null;
-
 export function playSuccessSound(): void {
-  try {
-    // Simple beep using expo-av would be better, but for now we'll skip
-    // In a real implementation, use expo-av
-  } catch (error) {
-    console.warn('Could not play success sound:', error);
-  }
+  // Would use expo-av for sound effects
 }
 
 export function unlockAudio(): void {
-  // No-op for mobile - audio is always unlocked
+  // No-op for mobile
 }

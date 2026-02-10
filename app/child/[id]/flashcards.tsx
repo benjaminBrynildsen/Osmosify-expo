@@ -11,7 +11,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useChildren } from '../../../contexts/ChildrenContext';
 import { COLORS, useTheme } from '../../../contexts/ThemeContext';
-import { speakWord, cancelSpeech } from '../../../lib/speech';
+import {
+  speakWord,
+  cancelSpeech,
+  isSpeechRecognitionSupported,
+  requestSpeechPermission,
+  startListening,
+} from '../../../lib/speech';
 import { Ionicons } from '@expo/vector-icons';
 import type { Word } from '../../../types';
 
@@ -44,8 +50,13 @@ export default function FlashcardsScreen() {
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
   const [isPaused, setIsPaused] = useState(false);
   
+  const [isListening, setIsListening] = useState(false);
+  const [speechAvailable, setSpeechAvailable] = useState(false);
+  const [transcript, setTranscript] = useState('');
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const listenerRef = useRef<{ stop: () => void; updateTargetWord: (w: string) => void } | null>(null);
   
   // Initialize session
   useEffect(() => {
@@ -103,6 +114,76 @@ export default function FlashcardsScreen() {
     }
   }, [currentWord, showFeedback, isComplete]);
   
+  // Check speech recognition availability
+  useEffect(() => {
+    if (isSpeechRecognitionSupported()) {
+      requestSpeechPermission().then(granted => {
+        setSpeechAvailable(granted);
+      });
+    }
+  }, []);
+
+  // Stop listening when word changes or feedback shown
+  useEffect(() => {
+    if (showFeedback || isComplete) {
+      listenerRef.current?.stop();
+      listenerRef.current = null;
+      setIsListening(false);
+      setTranscript('');
+    }
+  }, [showFeedback, isComplete]);
+
+  // Clean up listener on unmount
+  useEffect(() => {
+    return () => {
+      listenerRef.current?.stop();
+    };
+  }, []);
+
+  const toggleListening = useCallback(() => {
+    if (!currentWord || showFeedback) return;
+
+    if (isListening) {
+      listenerRef.current?.stop();
+      listenerRef.current = null;
+      setIsListening(false);
+      setTranscript('');
+      return;
+    }
+
+    setIsListening(true);
+    setTranscript('');
+
+    listenerRef.current = startListening(
+      currentWord.word,
+      (result) => {
+        // Match found - mark correct
+        setTranscript(result.transcript);
+        listenerRef.current?.stop();
+        listenerRef.current = null;
+        setIsListening(false);
+        handleAnswer(true);
+      },
+      (result) => {
+        // No match on final result
+        setTranscript(result.transcript);
+        listenerRef.current?.stop();
+        listenerRef.current = null;
+        setIsListening(false);
+      },
+      () => {
+        // Error
+        setIsListening(false);
+        listenerRef.current = null;
+      },
+      () => {
+        // End
+        setIsListening(false);
+        listenerRef.current = null;
+      }
+    );
+  }, [currentWord, isListening, showFeedback]);
+
   const handleAnswer = useCallback((isCorrect: boolean) => {
     if (!currentWordId || !currentProgress) return;
     
@@ -365,11 +446,36 @@ export default function FlashcardsScreen() {
         </View>
       )}
       
+      {/* Mic Button */}
+      {speechAvailable && (
+        <View style={styles.micContainer}>
+          <TouchableOpacity
+            style={[
+              styles.micButton,
+              {
+                backgroundColor: isListening ? '#ef4444' : colors.primary,
+              }
+            ]}
+            onPress={toggleListening}
+            disabled={showFeedback !== null}
+          >
+            <Ionicons
+              name={isListening ? 'mic' : 'mic-outline'}
+              size={32}
+              color="white"
+            />
+          </TouchableOpacity>
+          <Text style={[styles.micLabel, { color: colors.onSurfaceVariant }]}>
+            {isListening ? (transcript || 'Listening...') : 'Tap to speak'}
+          </Text>
+        </View>
+      )}
+
       {/* Instructions */}
       <Text style={[styles.instructions, { color: colors.onSurfaceVariant }]}>
-        Say the word or tap a button
+        {speechAvailable ? 'Speak the word or tap a button' : 'Tap a button below'}
       </Text>
-      
+
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
         <TouchableOpacity
@@ -523,6 +629,26 @@ const styles = StyleSheet.create({
   resumeText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  micContainer: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  micButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  micLabel: {
+    fontSize: 12,
+    marginTop: 6,
   },
   instructions: {
     textAlign: 'center',

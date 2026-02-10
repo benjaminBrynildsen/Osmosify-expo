@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import type { Child, Word, ReadingSession, Book, ChildBookProgress } from '../types';
 import * as storage from '../lib/storage';

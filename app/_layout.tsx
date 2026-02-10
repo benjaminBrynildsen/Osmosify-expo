@@ -14,14 +14,13 @@ export default function RootLayout() {
           <ChildrenProvider>
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="child/[id]" />
+              <Stack.Screen name="child/[id]/index" />
               <Stack.Screen name="child/[id]/flashcards" />
               <Stack.Screen name="child/[id]/word-pop" />
               <Stack.Screen name="child/[id]/lava-letters" />
               <Stack.Screen name="child/[id]/books" />
               <Stack.Screen name="child/[id]/library" />
               <Stack.Screen name="child/[id]/upload" />
-              <Stack.Screen name="child/[id]/settings" />
             </Stack>
             <StatusBar style="auto" />
           </ChildrenProvider>

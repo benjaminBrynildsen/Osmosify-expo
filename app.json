@@ -15,7 +15,14 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.osmosify.app",
-      "buildNumber": "1.0.0"
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Osmosify uses your camera to photograph book pages for text extraction.",
+        "NSPhotoLibraryUsageDescription": "Osmosify accesses your photos to select book page images for text extraction.",
+        "NSSpeechRecognitionUsageDescription": "Osmosify uses speech recognition to check if words are read correctly.",
+        "NSMicrophoneUsageDescription": "Osmosify needs microphone access to listen when your child reads words aloud.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,16 +32,29 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.osmosify.app",
-      "versionCode": 1
+      "versionCode": 1,
+      "permissions": [
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
+    "plugins": [
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Osmosify needs microphone access to listen when your child reads words aloud.",
+          "speechRecognitionPermission": "Osmosify uses speech recognition to check if words are read correctly."
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "f6177f39-8a3c-4f0c-8274-8e4e9ad3ee87"
       }
     },
-    "owner": "benjaminbrynildsen"
+    "owner": "hansfather"
   }
 }

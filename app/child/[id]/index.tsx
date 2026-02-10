@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useChildren } from '../../contexts/ChildrenContext';
-import { COLORS, useTheme } from '../../contexts/ThemeContext';
+import { useChildren } from '../../../contexts/ChildrenContext';
+import { COLORS, useTheme } from '../../../contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import type { Word } from '../../types';
+import type { Word } from '../../../types';
 
 interface StatBlockProps {
   value: string | number;
