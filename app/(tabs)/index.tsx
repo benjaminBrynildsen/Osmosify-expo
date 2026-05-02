@@ -90,9 +90,9 @@ export default function HomeScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <View>
-          <Text style={[styles.title, { color: colors.onSurface }]}>Osmosify</Text>
+          <Text style={[styles.title, { color: colors.onSurface }]}>Noah</Text>
           <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
-            Select a child to view their progress
+            Reading by osmosis. Select a child to start.
           </Text>
         </View>
         <TouchableOpacity 

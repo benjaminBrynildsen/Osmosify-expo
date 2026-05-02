@@ -12,12 +12,12 @@ import type {
 import { PRESET_BOOKS } from '../data/presetBooks';
 
 const STORAGE_KEYS = {
-  CHILDREN: '@osmosify:children',
-  WORDS: '@osmosify:words',
-  SESSIONS: '@osmosify:sessions',
-  BOOKS: '@osmosify:books',
-  PRESETS: '@osmosify:presets',
-  BOOK_PROGRESS: '@osmosify:bookProgress',
+  CHILDREN: '@noah:children',
+  WORDS: '@noah:words',
+  SESSIONS: '@noah:sessions',
+  BOOKS: '@noah:books',
+  PRESETS: '@noah:presets',
+  BOOK_PROGRESS: '@noah:bookProgress',
 };
 
 // Helper functions
@@ -149,7 +149,7 @@ export const saveSession = async (session: ReadingSession): Promise<void> => {
 };
 
 // Books
-const PRESET_BOOKS_KEY = '@osmosify:presetBooksInitialized_v1';
+const PRESET_BOOKS_KEY = '@noah:presetBooksInitialized_v1';
 
 const initializePresetBooks = async (): Promise<void> => {
   const initialized = await AsyncStorage.getItem(PRESET_BOOKS_KEY);

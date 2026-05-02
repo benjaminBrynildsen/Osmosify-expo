@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noah — Design Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --navy: #1B365D;
+      --navy-dim: #2A4870;
+      --gold: #C9A04A;
+      --gold-pale: #F5E9C7;
+      --cream: #FAF7F0;
+      --paper: #FFFFFF;
+      --warm-cream: #F0EBD8;
+      --slate: #5A6B7A;
+      --slate-light: #A8B5C4;
+      --parchment-edge: #D4C9A0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: linear-gradient(180deg, var(--cream) 0%, #ECE6D4 100%);
+      color: var(--navy);
+      min-height: 100vh;
+      padding: 48px 24px;
+    }
+
+    .page-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 56px;
+    }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 56px;
+      letter-spacing: -0.02em;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .page-header .gold-rule {
+      width: 80px;
+      height: 3px;
+      background: var(--gold);
+      margin: 16px auto;
+    }
+
+    .page-header p.tagline {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 22px;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .page-header p.lead {
+      font-size: 16px;
+      color: var(--slate);
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 56px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .screen-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .screen-label {
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--navy);
+      text-align: center;
+    }
+
+    .screen-sub {
+      font-size: 13px;
+      color: var(--slate);
+      text-align: center;
+      max-width: 280px;
+    }
+
+    /* iPhone frame */
+    .iphone {
+      width: 320px;
+      height: 660px;
+      background: #1a1a1a;
+      border-radius: 44px;
+      padding: 12px;
+      box-shadow:
+        0 20px 50px rgba(27, 54, 93, 0.18),
+        inset 0 0 0 2px #2a2a2a;
+      position: relative;
+    }
+
+    .iphone::before {
+      /* Dynamic Island */
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 28px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 10;
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      background: var(--cream);
+      border-radius: 32px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-bar {
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+      flex-shrink: 0;
+    }
+
+    .status-bar .right {
+      display: flex;
+      gap: 5px;
+      font-size: 11px;
+    }
+
+    .app-content {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      padding: 16px 20px 12px;
+    }
+
+    .app-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -0.01em;
+    }
+
+    .app-header .gold-bar {
+      width: 36px;
+      height: 2px;
+      background: var(--gold);
+      margin-top: 6px;
+    }
+
+    .app-header .subtitle {
+      font-size: 12px;
+      color: var(--slate);
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .app-body {
+      flex: 1;
+      padding: 0 16px;
+      overflow-y: auto;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--parchment-edge);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--gold-pale);
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 20px;
+      border: 2px solid var(--gold);
+      flex-shrink: 0;
+    }
+
+    .card-text {
+      flex: 1;
+    }
+
+    .card-name {
+      font-family: 'Playfair Display', serif;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--navy);
+    }
+
+    .card-meta {
+      font-size: 11px;
+      color: var(--slate);
+      margin-top: 2px;
+    }
+
+    .chevron {
+      color: var(--slate-light);
+      font-size: 18px;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      background: var(--navy);
+      color: var(--cream);
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      letter-spacing: 0.01em;
+      box-shadow: 0 2px 0 var(--gold);
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--navy);
+      border: 1.5px solid var(--navy);
+    }
+
+    /* Tab bar */
+    .tab-bar {
+      height: 70px;
+      background: var(--paper);
+      border-top: 1px solid var(--parchment-edge);
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding-top: 10px;
+      flex-shrink: 0;
+    }
+
+    .tab-bar .tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      color: var(--slate);
+    }
+
+    .tab.active {
+      color: var(--navy);
+    }
+
+    .tab .icon {
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .tab.active .icon {
+      color: var(--gold);
+    }
+
+    /* Activity tiles */
+    .activity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .activity-tile {
+      background: var(--paper);
+      border: 1px solid var(--parchment-edge);
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+    }
+
+    .activity-tile.featured {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dim) 100%);
+      color: var(--cream);
+      border: 1px solid var(--gold);
+      grid-column: span 2;
+    }
+
+    .activity-tile .icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .activity-tile h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .activity-tile p {
+      font-size: 10px;
+      color: var(--slate);
+    }
+
+    .activity-tile.featured p {
+      color: var(--gold-pale);
+    }
+
+    /* Flashcard */
+    .flashcard {
+      background: var(--paper);
+      border: 2px solid var(--parchment-edge);
+      border-radius: 18px;
+      margin: 30px 16px;
+      padding: 40px 20px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(27, 54, 93, 0.06);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .flashcard .word {
+      font-family: 'Playfair Display', serif;
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .flashcard .pron {
+      font-style: italic;
+      color: var(--gold);
+      font-size: 16px;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .flashcard .speaker {
+      margin-top: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--navy);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      align-self: center;
+    }
+
+    /* Word list */
+    .word-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .word-row {
+      background: var(--paper);
+      border: 1px solid var(--parchment-edge);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .word-row .word-text {
+      font-family: 'Playfair Display', serif;
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--navy);
+    }
+
+    .word-row .badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: var(--gold-pale);
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    .word-row .badge.mastered {
+      background: var(--navy);
+      color: var(--cream);
+    }
+
+    .word-row .badge.learning {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    /* Upload screen */
+    .upload-zone {
+      flex: 1;
+      margin: 16px;
+      border: 2px dashed var(--gold);
+      border-radius: 18px;
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .upload-zone .big-icon {
+      font-size: 56px;
+      color: var(--gold);
+    }
+
+    .upload-zone h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      color: var(--navy);
+    }
+
+    .upload-zone p {
+      font-size: 12px;
+      color: var(--slate);
+      max-width: 220px;
+      line-height: 1.5;
+    }
+
+    /* Splash */
+    .splash {
+      flex: 1;
+      background: var(--navy);
+      color: var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .splash .logo-mark {
+      width: 88px;
+      height: 88px;
+      border: 3px solid var(--gold);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 48px;
+      color: var(--gold);
+      margin-bottom: 24px;
+    }
+
+    .splash h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 8px;
+    }
+
+    .splash .tagline {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: var(--gold);
+      font-size: 18px;
+      margin-bottom: 32px;
+    }
+
+    .splash .gold-rule {
+      width: 60px;
+      height: 2px;
+      background: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .splash .footer-line {
+      font-size: 11px;
+      color: var(--slate-light);
+      margin-top: auto;
+      padding-top: 24px;
+    }
+
+    /* Magic moment */
+    .magic-screen {
+      flex: 1;
+      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dim) 100%);
+      color: var(--cream);
+      padding: 32px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+    }
+
+    .magic-screen .star {
+      font-size: 40px;
+      color: var(--gold);
+    }
+
+    .magic-screen h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--gold);
+    }
+
+    .magic-screen .sentence {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      line-height: 1.4;
+      font-weight: 600;
+      color: var(--cream);
+      margin: 16px 0;
+    }
+
+    .magic-screen .speak-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--navy);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 8px 0;
+    }
+
+    /* Section header */
+    .section-h {
+      font-family: 'Playfair Display', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 16px 0 8px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .stat-tile {
+      flex: 1;
+      background: var(--paper);
+      border: 1px solid var(--parchment-edge);
+      border-radius: 12px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+
+    .stat-tile .number {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .stat-tile .number.gold {
+      color: var(--gold);
+    }
+
+    .stat-tile .label {
+      font-size: 10px;
+      color: var(--slate);
+      margin-top: 2px;
+    }
+
+    /* Top header bar (for child screen) */
+    .topbar {
+      background: var(--navy);
+      color: var(--cream);
+      padding: 14px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .topbar .back {
+      font-size: 18px;
+    }
+
+    .topbar h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .footer-note {
+      text-align: center;
+      max-width: 720px;
+      margin: 80px auto 24px;
+      font-size: 13px;
+      color: var(--slate);
+      line-height: 1.6;
+    }
+
+    .footer-note .gold {
+      color: var(--gold);
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>Noah</h1>
+    <div class="gold-rule"></div>
+    <p class="tagline">Reading by osmosis.</p>
+    <p class="lead">
+      Design preview — a kids' reading app that teaches by absorption. Named for Noah Webster, lexicographer and father of American literacy. The palette borrows the navy and embossed gold of his blue-backed speller. Below: nine key screens.
+    </p>
+  </header>
+
+  <div class="grid">
+    <!-- 1. Splash -->
+    <div class="screen-wrap">
+      <div class="iphone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right"><span>5G</span><span>●●●</span></div>
+          </div>
+          <div class="splash">
+            <div class="logo-mark">N</div>
+            <h1>Noah</h1>
+            <div class="gold-rule"></div>
+            <div class="tagline">Reading by osmosis</div>
+            <div class="footer-line">See it. Say it. Know it.</div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">1 — Splash</div>
+      <div class="screen-sub">First impression. Webster blue + embossed gold mark.</div>
+    </div>
+
+    <!-- 2. Children list -->
+    <div class="screen-wrap">
+      <div class="iphone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right"><span>5G</span><span>●●●</span></div>
+          </div>
+          <div class="app-content">
+            <div class="app-header">
+              <h2>Noah</h2>
+              <div class="gold-bar"></div>
+              <div class="subtitle">Reading by osmosis. Select a child to start.</div>
+            </div>
+            <div class="app-body">
+              <div class="card">
+                <div class="avatar">H</div>
+                <div class="card-text">
+                  <div class="card-name">Hans</div>
+                  <div class="card-meta">128 words • Kindergarten</div>
+                </div>
+                <div class="chevron">›</div>
+              </div>
+              <div class="card">
+                <div class="avatar">E</div>
+                <div class="card-text">
+                  <div class="card-name">Emma</div>
+                  <div class="card-meta">42 words • Pre-K</div>
+                </div>
+                <div class="chevron">›</div>
+              </div>
+              <div style="height: 12px"></div>
+              <button class="btn-primary">+ Add a child</button>
+            </div>
+            <div class="tab-bar">
+              <div class="tab active"><div class="icon">👤</div>Children</div>
+              <div class="tab"><div class="icon">📚</div>Books</div>
+              <div class="tab"><div class="icon">⚙️</div>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">2 — Children</div>
+      <div class="screen-sub">Home tab. One avatar per kid. Big "add child" CTA.</div>
+    </div>
+
+    <!-- 3. Child profile -->
+    <div class="screen-wrap">
+      <div class="iphone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right"><span>5G</span><span>●●●</span></div>
+          </div>
+          <div class="app-content">
+            <div class="topbar">
+              <div class="back">‹</div>
+              <h3>Hans</h3>
+            </div>
+            <div class="app-body" style="padding-top: 12px;">
+              <div class="stats-row">
+                <div class="stat-tile">
+                  <div class="number">128</div>
+                  <div class="label">Words known</div>
+                </div>
+                <div class="stat-tile">
+                  <div class="number gold">14</div>
+                  <div class="label">Day streak</div>
+                </div>
+                <div class="stat-tile">
+                  <div class="number">7</div>
+                  <div class="label">Books</div>
+                </div>
+              </div>
+              <div class="section-h">Practice</div>
+              <div class="activity-grid">
+                <div class="activity-tile featured">
+                  <span class="icon">✦</span>
+                  <h4>Today's words</h4>
+                  <p>5 new words ready to absorb</p>
+                </div>
+                <div class="activity-tile">
+                  <span class="icon">📇</span>
+                  <h4>Flashcards</h4>
+                  <p>Mastery</p>
+                </div>
+                <div class="activity-tile">
+                  <span class="icon">🎯</span>
+                  <h4>Word Pop</h4>
+                  <p>Find the word</p>
+                </div>
+                <div class="activity-tile">
+                  <span class="icon">📖</span>
+                  <h4>Library</h4>
+                  <p>7 books</p>
+                </div>
+                <div class="activity-tile">
+                  <span class="icon">📷</span>
+                  <h4>Add page</h4>
+                  <p>Scan a book</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">3 — Child profile</div>
+      <div class="screen-sub">Stats above the fold. "Today's words" is the hero CTA.</div>
+    </div>
+
+    <!-- 4. Flashcards -->
+    <div class="screen-wrap">
+      <div class="iphone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right"><span>5G</span><span>●●●</span></div>
+          </div>
+          <div class="app-content">
+            <div class="topbar">
+              <div class="back">✕</div>
+              <h3 style="flex:1; text-align:center;">3 of 5</h3>
+              <div style="opacity:.5; font-size: 12px;">Skip</div>
+            </div>
+            <div class="flashcard">
+              <div class="word">rabbit</div>
+              <div class="pron">/ˈrabɪt/</div>
+              <div class="speaker">🔊</div>
+            </div>
+            <div style="padding: 0 16px 20px; display: flex; gap: 10px;">
+              <button class="btn-primary btn-outline" style="flex:1;">Still learning</button>
+              <button class="btn-primary btn-gold" style="flex:1;">Got it</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">4 — Flashcards</div>
+      <div class="screen-sub">Big serif word. Tap speaker = device TTS. Two-button decision.</div>
+    </div>
+
+    <!-- 5. Word library -->
+    <div class="screen-wrap">
+      <div class="iphone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right"><span>5G</span><span>●●●</span></div>
+          </div>
+          <div class="app-content">
+            <div class="topbar">
+              <div class="back">‹</div>
+              <h3>Hans's words</h3>
+            </div>
+            <div class="app-body" style="padding-top: 12px;">
+              <div style="display:flex; gap:6px; margin-bottom: 12px;">
+                <span style="background: var(--navy); color: var(--cream); padding: 6px 12px; border-radius: 14px; font-size: 11px; font-weight: 600;">All 128</span>
+                <span style="background: var(--paper); border: 1px solid var(--parchment-edge); color: var(--slate); padding: 6px 12px; border-radius: 14px; font-size: 11px;">New</span>
+                <span style="background: var(--paper); border: 1px solid var(--parchment-edge); color: var(--slate); padding: 6px 12px; border-radius: 14px; font-size: 11px;">Mastered</span>
+              </div>
+              <div class="word-list">
+                <div class="word-row">
+                  <span class="word-text">rabbit</span>
+                  <span class="badge mastered">Mastered</span>
+                </div>
+                <div class="word-row">
+                  <span class="word-text">garden</span>
+                  <span class="badge learning">Learning</span>
+                </div>
+                <div class="word-row">
+                  <span class="word-text">mother</span>
+                  <span class="badge mastered">Mastered</span>
+                </div>
+                <div class="word-row">
+                  <span class="word-text">jacket</span>
+                  <span class="badge learning">Learning</span>
+                </div>
+                <div class="word-row">
+                  <span class="word-text">sparrow</span>
+                  <span class="badge">New</span>
+                </div>
+                <div class="word-row">
+                  <span class="word-text">whisker</span>
+                  <span class="badge">New</span>
+                </div>
+                <div class="word-row">
+                  <span class="word-text">parsley</span>
+                  <span class="badge mastered">Mastered</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">5 — Word library</div>
+      <div class="screen-sub">Filter pills. Status badges in gold + navy.</div>
+    </div>
+
+    <!-- 6. Books library -->
+    <div class="screen-wrap">
+      <div class="iphone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right"><span>5G</span><span>●●●</span></div>
+          </div>
+          <div class="app-content">
+            <div class="topbar">
+              <div class="back">‹</div>
+              <h3>Hans's library</h3>
+            </div>
+            <div class="app-body" style="padding-top: 12px;">
+              <div class="section-h">Active</div>
+              <div class="card" style="background: var(--paper);">
+                <div style="width: 44px; height: 56px; border-radius: 4px; background: linear-gradient(135deg, var(--navy), var(--navy-dim)); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; color: var(--gold); font-family: 'Playfair Display', serif; font-size: 11px; text-align: center; padding: 4px;">Peter Rabbit</div>
+                <div class="card-text">
+                  <div class="card-name">The Tale of Peter Rabbit</div>
+                  <div class="card-meta">Beatrix Potter • 24/30 words</div>
+                </div>
+                <div class="chevron">›</div>
+              </div>
+              <div class="card">
+                <div style="width: 44px; height: 56px; border-radius: 4px; background: var(--gold-pale); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; color: var(--navy); font-family: 'Playfair Display', serif; font-size: 11px; text-align: center; padding: 4px;">Benjamin Bunny</div>
+                <div class="card-text">
+                  <div class="card-name">The Tale of Benjamin Bunny</div>
+                  <div class="card-meta">Beatrix Potter • 8/22 words</div>
+                </div>
+                <div class="chevron">›</div>
+              </div>
+              <div class="section-h">Available</div>
+              <div class="card">
+                <div style="width: 44px; height: 56px; border-radius: 4px; background: var(--warm-cream); border: 1px solid var(--parchment-edge); display: flex; align-items: center; justify-content: center; color: var(--slate); font-family: 'Playfair Display', serif; font-size: 11px; text-align: center; padding: 4px;">Twas the Night</div>
+                <div class="card-text">
+                  <div class="card-name">'Twas the Night Before Christmas</div>
+                  <div class="card-meta">Clement Clarke Moore • 1st grade</div>
+                </div>
+                <div class="chevron">›</div>
+              </div>
+              <button class="btn-primary" style="margin-top: 12px;">+ Scan a new book</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">6 — Books</div>
+      <div class="screen-sub">Active vs available. Mini covers nod to old book spines.</div>
+    </div>
+
+    <!-- 7. Upload / scan -->
+    <div class="screen-wrap">
+      <div class="iphone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right"><span>5G</span><span>●●●</span></div>
+          </div>
+          <div class="app-content">
+            <div class="topbar">
+              <div class="back">‹</div>
+              <h3>Scan a page</h3>
+            </div>
+            <div class="upload-zone">
+              <div class="big-icon">📖</div>
+              <h3>Take a photo</h3>
+              <p>Snap a page from any book and Noah will pull out the words your child should learn next.</p>
+              <button class="btn-primary btn-gold" style="width: auto; padding: 10px 24px;">Open camera</button>
+              <button style="background: none; border: none; color: var(--slate); font-size: 12px; text-decoration: underline; cursor: pointer; font-family: inherit;">Or pick from photos</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">7 — Scan a page</div>
+      <div class="screen-sub">OCR via Grok vision. One CTA. Friendly copy.</div>
+    </div>
+
+    <!-- 8. Magic moment -->
+    <div class="screen-wrap">
+      <div class="iphone">
+        <div class="screen">
+          <div class="status-bar" style="color: var(--cream);">
+            <span>9:41</span>
+            <div class="right"><span>5G</span><span>●●●</span></div>
+          </div>
+          <div class="magic-screen">
+            <div class="star">★</div>
+            <h3>You did it!</h3>
+            <div class="sentence">"The big rabbit ran into the garden."</div>
+            <div class="speak-btn">🔊</div>
+            <p style="font-size: 12px; color: var(--gold-pale); font-style: italic;">A sentence with all five words you just learned.</p>
+            <button class="btn-primary btn-gold" style="margin-top: 16px;">Read it together</button>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">8 — Magic moment</div>
+      <div class="screen-sub">After Flashcards. AI-generated sentence using just-learned words.</div>
+    </div>
+
+    <!-- 9. Settings / parent -->
+    <div class="screen-wrap">
+      <div class="iphone">
+        <div class="screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="right"><span>5G</span><span>●●●</span></div>
+          </div>
+          <div class="app-content">
+            <div class="app-header">
+              <h2>Settings</h2>
+              <div class="gold-bar"></div>
+              <div class="subtitle">Account, sync, and preferences</div>
+            </div>
+            <div class="app-body">
+              <div class="section-h">Account</div>
+              <div class="card">
+                <div style="width: 32px; text-align:center; font-size: 16px;">🍎</div>
+                <div class="card-text">
+                  <div class="card-name" style="font-size: 14px;">Sign in with Apple</div>
+                  <div class="card-meta">Sync across your devices</div>
+                </div>
+                <div class="chevron">›</div>
+              </div>
+              <div class="section-h">Reading</div>
+              <div class="card">
+                <div style="width: 32px; text-align:center; font-size: 16px;">🔊</div>
+                <div class="card-text">
+                  <div class="card-name" style="font-size: 14px;">Voice</div>
+                  <div class="card-meta">Samantha (US English)</div>
+                </div>
+                <div class="chevron">›</div>
+              </div>
+              <div class="card">
+                <div style="width: 32px; text-align:center; font-size: 16px;">⚡</div>
+                <div class="card-text">
+                  <div class="card-name" style="font-size: 14px;">Speed</div>
+                  <div class="card-meta">Slow</div>
+                </div>
+                <div class="chevron">›</div>
+              </div>
+              <div class="section-h">About</div>
+              <div class="card">
+                <div style="width: 32px; text-align:center; font-size: 16px;">📜</div>
+                <div class="card-text">
+                  <div class="card-name" style="font-size: 14px;">Why "Noah"?</div>
+                  <div class="card-meta">The story behind the name</div>
+                </div>
+                <div class="chevron">›</div>
+              </div>
+            </div>
+            <div class="tab-bar">
+              <div class="tab"><div class="icon">👤</div>Children</div>
+              <div class="tab"><div class="icon">📚</div>Books</div>
+              <div class="tab active"><div class="icon">⚙️</div>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-label">9 — Settings</div>
+      <div class="screen-sub">Sign in with Apple ↔ syncs to Supabase. The "Why Noah?" page tells the Webster story.</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    <p><span class="gold">A note on the design:</span> serif type (Playfair Display) for headings and words echoes the dictionary's authority; clean sans-serif (Inter) keeps everything readable. Cream paper background, navy ink, gold accents — a 240-year-old book opened on a phone.</p>
+    <p style="margin-top: 12px;">Iterate freely — these are HTML mockups, not the actual app yet.</p>
+  </div>
+</body>
+</html>
