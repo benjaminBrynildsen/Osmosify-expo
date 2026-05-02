@@ -7,86 +7,121 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&family=DM+Sans:opsz,wght@9..40,300..700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Nunito:ital,wght@0,300..900;1,300..900&family=Caveat:wght@500;700&display=swap"
     rel="stylesheet"
   />
   <style>
     :root {
-      --navy: #1B365D;
-      --navy-dim: #2A4870;
-      --gold: #C9A04A;
-      --gold-pale: #F5E9C7;
-      --cream: #FAF7F0;
+      --navy: #1F3A6A;
+      --navy-dim: #2F4E83;
+      --navy-deep: #14264A;
+      --gold: #D4A847;
+      --gold-bright: #EFC669;
+      --gold-pale: #FBEDC4;
+      --cream: #FBF7EC;
       --paper: #FFFFFF;
-      --warm-cream: #F0EBD8;
-      --slate: #5A6B7A;
+      --warm-cream: #F5EED8;
+      --slate: #5E6E84;
       --slate-light: #A8B5C4;
-      --parchment-edge: #D4C9A0;
+      --coral: #F2A48A;
+      --coral-pale: #FDE2D6;
+      --sage: #B7CEB8;
+      --sage-pale: #E2EDDF;
+      --lavender: #C5BFE0;
+      --lavender-pale: #ECEAF6;
+      --sky: #A5C8E0;
+      --sky-pale: #DCE9F2;
+
+      --shadow-card: 0 1px 2px rgba(31, 58, 106, 0.04), 0 8px 24px rgba(31, 58, 106, 0.06);
+      --shadow-lift: 0 2px 4px rgba(31, 58, 106, 0.06), 0 16px 40px rgba(31, 58, 106, 0.10);
+      --shadow-press: 0 0 0 1.5px var(--gold), 0 2px 6px rgba(31, 58, 106, 0.08);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { font-family: 'Nunito', -apple-system, sans-serif; }
 
     body {
-      font-family: 'DM Sans', -apple-system, sans-serif;
-      background: linear-gradient(180deg, var(--cream) 0%, #ECE6D4 100%);
+      background:
+        radial-gradient(circle at 12% 8%, var(--gold-pale) 0%, transparent 35%),
+        radial-gradient(circle at 88% 22%, var(--coral-pale) 0%, transparent 35%),
+        radial-gradient(circle at 70% 80%, var(--sage-pale) 0%, transparent 40%),
+        linear-gradient(180deg, var(--cream) 0%, #F2EAD3 100%);
       color: var(--navy);
       min-height: 100vh;
-      padding: 48px 24px;
+      padding: 56px 24px 80px;
     }
 
-    /* Reserved: the literal "Noah" wordmark/logo */
+    /* Brand wordmark — only place that uses Fraunces */
     .noah-wordmark {
-      font-family: 'Playfair Display', 'Source Serif 4', Georgia, serif;
-      font-weight: 800;
-      letter-spacing: -0.015em;
+      font-family: 'Fraunces', Georgia, serif;
+      font-variation-settings: 'opsz' 144, 'SOFT' 100;
+      font-weight: 900;
+      letter-spacing: -0.025em;
     }
 
     .page-header {
       text-align: center;
       max-width: 720px;
-      margin: 0 auto 56px;
+      margin: 0 auto 64px;
+    }
+
+    .page-header .nb-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 88px;
+      height: 88px;
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%);
+      color: var(--gold);
+      border-radius: 26px;
+      box-shadow: 0 12px 32px rgba(31, 58, 106, 0.25), inset 0 0 0 2px rgba(212, 168, 71, 0.5);
+      font-family: 'Fraunces', serif;
+      font-variation-settings: 'opsz' 144, 'SOFT' 80;
+      font-weight: 900;
+      font-size: 50px;
+      margin-bottom: 24px;
     }
 
     .page-header h1 {
-      font-family: 'Playfair Display', serif;
-      font-weight: 800;
-      font-size: 64px;
-      letter-spacing: -0.025em;
+      font-family: 'Fraunces', serif;
+      font-variation-settings: 'opsz' 144, 'SOFT' 100;
+      font-weight: 900;
+      font-size: 76px;
+      letter-spacing: -0.035em;
       color: var(--navy);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .page-header .gold-rule {
-      width: 80px;
+      width: 72px;
       height: 3px;
-      background: var(--gold);
-      margin: 16px auto;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 14px auto;
     }
 
     .page-header p.tagline {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-style: italic;
-      font-size: 22px;
-      font-weight: 400;
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      font-size: 30px;
       color: var(--gold);
-      margin-bottom: 16px;
+      margin-bottom: 18px;
+      transform: rotate(-1deg);
     }
 
     .page-header p.lead {
       font-size: 16px;
       color: var(--slate);
       line-height: 1.6;
+      max-width: 540px;
+      margin: 0 auto;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 56px;
-      max-width: 1400px;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 64px 40px;
+      max-width: 1480px;
       margin: 0 auto;
     }
 
@@ -94,13 +129,13 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
 
     .screen-label {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-weight: 600;
-      font-size: 18px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 16px;
       color: var(--navy);
       text-align: center;
     }
@@ -109,33 +144,34 @@
       font-size: 13px;
       color: var(--slate);
       text-align: center;
-      max-width: 280px;
+      max-width: 290px;
+      line-height: 1.5;
     }
 
     /* iPhone frame */
     .iphone {
-      width: 320px;
-      height: 660px;
-      background: #1a1a1a;
-      border-radius: 44px;
+      width: 340px;
+      height: 700px;
+      background: linear-gradient(160deg, #2a2a2a 0%, #0e0e0e 100%);
+      border-radius: 50px;
       padding: 12px;
       box-shadow:
-        0 20px 50px rgba(27, 54, 93, 0.18),
+        0 30px 80px rgba(31, 58, 106, 0.22),
+        0 8px 16px rgba(31, 58, 106, 0.10),
         inset 0 0 0 2px #2a2a2a;
       position: relative;
     }
 
     .iphone::before {
-      /* Dynamic Island */
       content: '';
       position: absolute;
       top: 18px;
       left: 50%;
       transform: translateX(-50%);
-      width: 100px;
-      height: 28px;
+      width: 110px;
+      height: 30px;
       background: #000;
-      border-radius: 20px;
+      border-radius: 22px;
       z-index: 10;
     }
 
@@ -143,7 +179,7 @@
       width: 100%;
       height: 100%;
       background: var(--cream);
-      border-radius: 32px;
+      border-radius: 38px;
       overflow: hidden;
       position: relative;
       display: flex;
@@ -155,17 +191,18 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 28px 0;
+      padding: 14px 30px 0;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--navy);
       flex-shrink: 0;
     }
 
     .status-bar .right {
       display: flex;
-      gap: 5px;
+      gap: 6px;
       font-size: 11px;
+      align-items: center;
     }
 
     .app-content {
@@ -176,91 +213,106 @@
     }
 
     .app-header {
-      padding: 16px 20px 12px;
+      padding: 18px 22px 14px;
     }
 
     .app-header h2 {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--navy);
-      letter-spacing: -0.01em;
-    }
-    .app-header h2.noah-wordmark {
-      font-family: 'Playfair Display', serif;
+      font-family: 'Nunito', sans-serif;
+      font-size: 26px;
       font-weight: 800;
+      color: var(--navy);
       letter-spacing: -0.02em;
     }
 
-    .app-header .gold-bar {
-      width: 36px;
-      height: 2px;
-      background: var(--gold);
-      margin-top: 6px;
+    .app-header h2.noah-wordmark {
+      font-size: 32px;
     }
 
     .app-header .subtitle {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--slate);
-      margin-top: 8px;
-      font-style: italic;
+      margin-top: 4px;
+      font-family: 'Caveat', cursive;
+      font-weight: 500;
+      font-size: 19px;
+      color: var(--gold);
     }
 
     .app-body {
       flex: 1;
-      padding: 0 16px;
+      padding: 6px 18px;
       overflow-y: auto;
     }
 
     /* Cards */
     .card {
       background: var(--paper);
-      border: 1px solid var(--parchment-edge);
-      border-radius: 14px;
+      border-radius: 22px;
       padding: 14px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card .accent-strip {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 5px;
     }
 
     .avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: var(--gold-pale);
-      color: var(--navy);
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-weight: 700;
-      font-size: 20px;
-      border: 2px solid var(--gold);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 24px;
       flex-shrink: 0;
+      position: relative;
+      box-shadow: 0 4px 10px rgba(31, 58, 106, 0.10);
+    }
+    .avatar .pet {
+      position: absolute;
+      bottom: -8px;
+      right: -8px;
+      font-size: 22px;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
     }
 
-    .card-text {
-      flex: 1;
-    }
+    .avatar.coral { background: var(--coral); color: white; }
+    .avatar.sage { background: var(--sage); color: var(--navy-deep); }
+    .avatar.gold { background: var(--gold-bright); color: var(--navy-deep); }
+    .avatar.lavender { background: var(--lavender); color: var(--navy-deep); }
+    .avatar.sky { background: var(--sky); color: var(--navy-deep); }
+
+    .card-text { flex: 1; min-width: 0; }
 
     .card-name {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-weight: 600;
-      font-size: 16px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
       color: var(--navy);
-      letter-spacing: -0.005em;
+      letter-spacing: -0.01em;
     }
 
     .card-meta {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--slate);
-      margin-top: 2px;
+      margin-top: 3px;
+      font-weight: 500;
     }
 
     .chevron {
       color: var(--slate-light);
-      font-size: 18px;
+      font-size: 22px;
+      font-weight: 600;
     }
 
     /* Buttons */
@@ -269,63 +321,147 @@
       background: var(--navy);
       color: var(--cream);
       border: none;
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 14px;
-      font-weight: 600;
-      font-family: inherit;
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
       cursor: pointer;
       letter-spacing: 0.01em;
-      box-shadow: 0 2px 0 var(--gold);
+      box-shadow: 0 3px 0 var(--navy-deep), 0 6px 20px rgba(31, 58, 106, 0.20);
+      position: relative;
+      transition: transform 0.1s;
     }
 
     .btn-gold {
       background: var(--gold);
-      color: var(--navy);
+      color: var(--navy-deep);
+      box-shadow: 0 3px 0 #B58A2E, 0 6px 20px rgba(212, 168, 71, 0.35);
+    }
+
+    .btn-coral {
+      background: var(--coral);
+      color: white;
+      box-shadow: 0 3px 0 #C97961, 0 6px 20px rgba(242, 164, 138, 0.35);
     }
 
     .btn-outline {
-      background: transparent;
+      background: var(--paper);
       color: var(--navy);
-      border: 1.5px solid var(--navy);
+      border: 2px solid var(--gold);
+      box-shadow: 0 3px 0 var(--gold-pale);
     }
 
     /* Tab bar */
     .tab-bar {
-      height: 70px;
+      height: 78px;
       background: var(--paper);
-      border-top: 1px solid var(--parchment-edge);
+      border-top: 1px solid rgba(31, 58, 106, 0.08);
       display: flex;
       justify-content: space-around;
       align-items: flex-start;
-      padding-top: 10px;
+      padding: 12px 8px 0;
       flex-shrink: 0;
+      box-shadow: 0 -4px 16px rgba(31, 58, 106, 0.04);
     }
 
-    .tab-bar .tab {
+    .tab {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
       font-size: 10px;
-      color: var(--slate);
-    }
-
-    .tab.active {
-      color: var(--navy);
+      color: var(--slate-light);
+      font-weight: 700;
+      flex: 1;
+      padding: 4px 0;
     }
 
     .tab .icon {
-      width: 22px;
-      height: 22px;
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 18px;
+      background: transparent;
+      transition: all 0.2s;
     }
 
+    .tab.active { color: var(--navy); }
     .tab.active .icon {
+      background: var(--gold-pale);
+      color: var(--navy);
+    }
+
+    /* Section header */
+    .section-h {
+      font-family: 'Nunito', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
       color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      margin: 18px 4px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-h::before {
+      content: '';
+      width: 14px;
+      height: 2px;
+      background: var(--gold);
+      border-radius: 2px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: flex;
+      gap: 10px;
+      margin: 14px 0 4px;
+    }
+
+    .stat-tile {
+      flex: 1;
+      background: var(--paper);
+      border-radius: 18px;
+      padding: 14px 10px 12px;
+      text-align: center;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-tile .badge-emoji {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: 14px;
+      opacity: 0.6;
+    }
+
+    .stat-tile .number {
+      font-family: 'Fraunces', serif;
+      font-variation-settings: 'opsz' 96, 'SOFT' 80;
+      font-weight: 800;
+      font-size: 30px;
+      color: var(--navy);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .stat-tile .number.gold { color: var(--gold); }
+    .stat-tile .number.coral { color: var(--coral); }
+
+    .stat-tile .label {
+      font-size: 10px;
+      color: var(--slate);
+      margin-top: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     /* Activity tiles */
@@ -333,367 +469,616 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin-top: 16px;
+      margin-top: 4px;
     }
 
     .activity-tile {
       background: var(--paper);
-      border: 1px solid var(--parchment-edge);
-      border-radius: 14px;
-      padding: 16px 12px;
-      text-align: center;
+      border-radius: 20px;
+      padding: 16px 14px 14px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+      min-height: 96px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .activity-tile.featured {
-      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dim) 100%);
-      color: var(--cream);
-      border: 1px solid var(--gold);
       grid-column: span 2;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dim) 100%);
+      color: white;
+      box-shadow: 0 4px 0 var(--navy-deep), 0 12px 32px rgba(31, 58, 106, 0.25);
+      min-height: 120px;
     }
 
-    .activity-tile .icon {
-      font-size: 28px;
+    .activity-tile.featured::after {
+      content: '✦';
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      color: var(--gold);
+      font-size: 22px;
+    }
+
+    .activity-tile .icon-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
       margin-bottom: 8px;
-      display: block;
+    }
+
+    .activity-tile.featured .icon-circle {
+      width: auto;
+      height: auto;
+      background: transparent;
+      margin-bottom: 6px;
+      font-size: 32px;
     }
 
     .activity-tile h4 {
-      font-family: 'Source Serif 4', Georgia, serif;
+      font-family: 'Nunito', sans-serif;
       font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 4px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--navy);
+      margin-bottom: 2px;
+    }
+
+    .activity-tile.featured h4 {
+      color: white;
+      font-size: 18px;
     }
 
     .activity-tile p {
-      font-size: 10px;
+      font-size: 11px;
       color: var(--slate);
+      line-height: 1.4;
+      font-weight: 500;
     }
 
     .activity-tile.featured p {
       color: var(--gold-pale);
+      font-family: 'Caveat', cursive;
+      font-weight: 500;
+      font-size: 16px;
     }
 
+    /* Tile color variants */
+    .activity-tile.t-coral .icon-circle { background: var(--coral-pale); }
+    .activity-tile.t-sage .icon-circle { background: var(--sage-pale); }
+    .activity-tile.t-gold .icon-circle { background: var(--gold-pale); }
+    .activity-tile.t-lavender .icon-circle { background: var(--lavender-pale); }
+    .activity-tile.t-sky .icon-circle { background: var(--sky-pale); }
+
     /* Flashcard */
-    .flashcard {
-      background: var(--paper);
-      border: 2px solid var(--parchment-edge);
-      border-radius: 18px;
-      margin: 30px 16px;
-      padding: 40px 20px;
-      text-align: center;
-      box-shadow: 0 4px 16px rgba(27, 54, 93, 0.06);
+    .flashcard-area {
       flex: 1;
       display: flex;
       flex-direction: column;
+      padding: 12px 18px 0;
+    }
+
+    .progress-pip {
+      display: flex;
+      gap: 5px;
       justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .progress-pip .pip {
+      width: 24px;
+      height: 5px;
+      border-radius: 4px;
+      background: rgba(31, 58, 106, 0.12);
+    }
+
+    .progress-pip .pip.done { background: var(--gold); }
+    .progress-pip .pip.current { background: var(--navy); }
+
+    .flashcard {
+      background: var(--paper);
+      border-radius: 28px;
+      flex: 1;
+      padding: 36px 24px;
+      text-align: center;
+      box-shadow: var(--shadow-lift);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .flashcard::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      left: -40px;
+      width: 120px;
+      height: 120px;
+      background: var(--gold-pale);
+      border-radius: 50%;
+      opacity: 0.6;
+    }
+
+    .flashcard::after {
+      content: '';
+      position: absolute;
+      bottom: -50px;
+      right: -50px;
+      width: 140px;
+      height: 140px;
+      background: var(--coral-pale);
+      border-radius: 50%;
+      opacity: 0.5;
     }
 
     .flashcard .word {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: 60px;
-      font-weight: 600;
+      font-family: 'Fraunces', serif;
+      font-variation-settings: 'opsz' 144, 'SOFT' 100;
+      font-size: 64px;
+      font-weight: 700;
       color: var(--navy);
-      letter-spacing: -0.015em;
+      letter-spacing: -0.02em;
       margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
     }
 
     .flashcard .pron {
       font-style: italic;
       color: var(--gold);
       font-size: 17px;
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-weight: 400;
+      font-weight: 600;
+      font-family: 'Nunito', sans-serif;
+      position: relative;
+      z-index: 1;
     }
 
     .flashcard .speaker {
-      margin-top: 24px;
-      width: 56px;
-      height: 56px;
+      margin: 28px auto 0;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
       background: var(--gold);
-      color: var(--navy);
+      color: var(--navy-deep);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      align-self: center;
+      font-size: 26px;
+      box-shadow: 0 4px 0 #B58A2E, 0 8px 18px rgba(212, 168, 71, 0.4);
+      position: relative;
+      z-index: 1;
     }
 
     /* Word list */
-    .word-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .word-list { display: flex; flex-direction: column; gap: 8px; }
 
     .word-row {
       background: var(--paper);
-      border: 1px solid var(--parchment-edge);
-      border-radius: 10px;
-      padding: 10px 14px;
+      border-radius: 16px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      box-shadow: var(--shadow-card);
     }
 
     .word-row .word-text {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-weight: 500;
-      font-size: 17px;
+      font-family: 'Fraunces', serif;
+      font-variation-settings: 'opsz' 24, 'SOFT' 80;
+      font-weight: 600;
+      font-size: 18px;
       color: var(--navy);
     }
 
     .word-row .badge {
       font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 10px;
-      background: var(--gold-pale);
-      color: var(--navy);
-      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
-    .word-row .badge.mastered {
+    .word-row .badge.new { background: var(--lavender-pale); color: #6E5FA8; }
+    .word-row .badge.learning { background: var(--gold-pale); color: #8C6B1B; }
+    .word-row .badge.mastered { background: var(--sage-pale); color: #2F6B47; }
+
+    /* Filter pills */
+    .pill-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .pill {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--paper);
+      color: var(--slate);
+      box-shadow: var(--shadow-card);
+    }
+
+    .pill.active {
       background: var(--navy);
-      color: var(--cream);
-    }
-
-    .word-row .badge.learning {
-      background: var(--gold);
-      color: var(--navy);
+      color: white;
     }
 
     /* Upload screen */
     .upload-zone {
       flex: 1;
       margin: 16px;
-      border: 2px dashed var(--gold);
-      border-radius: 18px;
+      border-radius: 28px;
       background: var(--paper);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 12px;
-      padding: 24px;
+      gap: 14px;
+      padding: 32px 22px;
       text-align: center;
+      box-shadow: var(--shadow-lift);
+      position: relative;
+      overflow: hidden;
     }
 
-    .upload-zone .big-icon {
+    .upload-zone::before {
+      content: '📚';
+      position: absolute;
+      top: 20px;
+      right: 22px;
+      font-size: 22px;
+      opacity: 0.4;
+    }
+
+    .upload-zone .scene {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-pale), var(--coral-pale));
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 56px;
-      color: var(--gold);
+      box-shadow: inset 0 4px 12px rgba(255,255,255,0.4);
     }
 
     .upload-zone h3 {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: 19px;
-      font-weight: 600;
+      font-family: 'Nunito', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
       color: var(--navy);
+      letter-spacing: -0.01em;
     }
 
     .upload-zone p {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--slate);
-      max-width: 220px;
+      max-width: 240px;
       line-height: 1.5;
+      font-weight: 500;
     }
 
     /* Splash */
     .splash {
       flex: 1;
-      background: var(--navy);
+      background:
+        radial-gradient(circle at 50% 30%, var(--navy-dim) 0%, transparent 60%),
+        linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
       color: var(--cream);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 30px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .splash::before {
+      content: '✦';
+      position: absolute;
+      top: 18%;
+      left: 22%;
+      color: var(--gold);
+      font-size: 14px;
+      opacity: 0.6;
+    }
+    .splash::after {
+      content: '✦';
+      position: absolute;
+      bottom: 25%;
+      right: 18%;
+      color: var(--gold);
+      font-size: 18px;
+      opacity: 0.7;
     }
 
     .splash .logo-mark {
-      width: 88px;
-      height: 88px;
-      border: 3px solid var(--gold);
-      border-radius: 18px;
+      width: 110px;
+      height: 110px;
+      border-radius: 32px;
+      background: linear-gradient(160deg, var(--gold-bright) 0%, var(--gold) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Playfair Display', serif;
-      font-weight: 800;
-      font-size: 52px;
-      color: var(--gold);
-      margin-bottom: 24px;
+      font-family: 'Fraunces', serif;
+      font-variation-settings: 'opsz' 144, 'SOFT' 60;
+      font-weight: 900;
+      font-size: 64px;
+      color: var(--navy-deep);
+      margin-bottom: 28px;
+      box-shadow: 0 12px 40px rgba(212, 168, 71, 0.45), inset 0 -4px 0 rgba(0,0,0,0.08);
     }
 
     .splash h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 52px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
+      font-family: 'Fraunces', serif;
+      font-variation-settings: 'opsz' 144, 'SOFT' 100;
+      font-size: 60px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
       color: var(--cream);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .splash .tagline {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-style: italic;
-      font-weight: 400;
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
       color: var(--gold);
-      font-size: 18px;
-      margin-bottom: 32px;
+      font-size: 26px;
+      margin-bottom: 36px;
+      transform: rotate(-2deg);
     }
 
     .splash .gold-rule {
-      width: 60px;
+      width: 56px;
       height: 2px;
       background: var(--gold);
-      margin-bottom: 16px;
+      margin-bottom: 18px;
+      opacity: 0.5;
     }
 
     .splash .footer-line {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--slate-light);
       margin-top: auto;
-      padding-top: 24px;
+      padding-top: 32px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
     }
 
     /* Magic moment */
     .magic-screen {
       flex: 1;
-      background: linear-gradient(180deg, var(--navy) 0%, var(--navy-dim) 100%);
+      background:
+        radial-gradient(circle at 80% 10%, var(--gold-bright) 0%, transparent 35%),
+        radial-gradient(circle at 15% 90%, var(--coral) 0%, transparent 35%),
+        linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
       color: var(--cream);
-      padding: 32px 20px;
+      padding: 32px 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 20px;
+      gap: 18px;
+      position: relative;
     }
 
-    .magic-screen .star {
-      font-size: 40px;
-      color: var(--gold);
+    .magic-screen .confetti {
+      position: absolute;
+      top: 14%;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      font-size: 24px;
+    }
+
+    .magic-screen .star-big {
+      font-size: 64px;
+      filter: drop-shadow(0 6px 14px rgba(212, 168, 71, 0.4));
+      margin-top: 32px;
     }
 
     .magic-screen h3 {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: 21px;
+      font-family: 'Caveat', cursive;
+      font-size: 30px;
       font-weight: 700;
       color: var(--gold);
+      transform: rotate(-1deg);
     }
 
     .magic-screen .sentence {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: 25px;
-      line-height: 1.4;
-      font-weight: 500;
+      font-family: 'Fraunces', serif;
+      font-variation-settings: 'opsz' 144, 'SOFT' 100;
+      font-size: 28px;
+      line-height: 1.35;
+      font-weight: 700;
       color: var(--cream);
-      margin: 16px 0;
-      letter-spacing: -0.005em;
-    }
-
-    .magic-screen .speak-btn {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      background: var(--gold);
-      color: var(--navy);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      margin: 8px 0;
-    }
-
-    /* Section header */
-    .section-h {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--gold);
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      margin: 18px 0 8px;
-    }
-
-    /* Stats row */
-    .stats-row {
-      display: flex;
-      gap: 8px;
-      margin: 12px 0;
-    }
-
-    .stat-tile {
-      flex: 1;
-      background: var(--paper);
-      border: 1px solid var(--parchment-edge);
-      border-radius: 12px;
-      padding: 12px 10px;
-      text-align: center;
-    }
-
-    .stat-tile .number {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--navy);
+      margin: 12px 4px;
       letter-spacing: -0.01em;
     }
 
-    .stat-tile .number.gold {
-      color: var(--gold);
+    .magic-screen .speak-btn {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--navy-deep);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 4px 0 #B58A2E, 0 12px 32px rgba(212, 168, 71, 0.5);
+      margin: 8px 0;
     }
 
-    .stat-tile .label {
-      font-size: 10px;
-      color: var(--slate);
-      margin-top: 2px;
+    .magic-screen .word-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .magic-screen .chip {
+      background: rgba(212, 168, 71, 0.18);
+      color: var(--gold);
+      border: 1px solid rgba(212, 168, 71, 0.4);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Nunito', sans-serif;
     }
 
     /* Top header bar (for child screen) */
     .topbar {
-      background: var(--navy);
-      color: var(--cream);
-      padding: 14px 20px 16px;
+      background: var(--paper);
+      color: var(--navy);
+      padding: 14px 22px 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      border-bottom: 2px solid var(--gold);
+      gap: 12px;
+      box-shadow: 0 2px 12px rgba(31, 58, 106, 0.06);
     }
 
     .topbar .back {
-      font-size: 18px;
+      font-size: 26px;
+      color: var(--navy);
+      font-weight: 600;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--cream);
     }
 
     .topbar h3 {
-      font-family: 'Source Serif 4', Georgia, serif;
+      font-family: 'Nunito', sans-serif;
       font-size: 19px;
-      font-weight: 600;
-      letter-spacing: -0.005em;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.01em;
     }
 
+    .topbar .right-action {
+      margin-left: auto;
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: var(--gold-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+    }
+
+    /* Books list */
+    .book-row {
+      background: var(--paper);
+      border-radius: 22px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .book-spine {
+      width: 50px;
+      height: 70px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 10px;
+      text-align: center;
+      padding: 6px;
+      box-shadow: 2px 4px 8px rgba(0,0,0,0.12), inset 0 0 0 1px rgba(212,168,71,0.4);
+      flex-shrink: 0;
+      transform: rotate(-2deg);
+    }
+
+    .book-spine.b1 {
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%);
+    }
+    .book-spine.b2 {
+      background: linear-gradient(160deg, var(--coral) 0%, #D88066 100%);
+      color: white;
+    }
+    .book-spine.b3 {
+      background: linear-gradient(160deg, var(--sage) 0%, #88A98A 100%);
+      color: var(--navy-deep);
+    }
+
+    .book-progress {
+      height: 5px;
+      background: rgba(31, 58, 106, 0.10);
+      border-radius: 3px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .book-progress .fill {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 3px;
+    }
+
+    /* Streak badge */
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--coral), #E88160);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 3px 10px rgba(242, 164, 138, 0.4);
+    }
+
+    /* Footer */
     .footer-note {
       text-align: center;
       max-width: 720px;
-      margin: 80px auto 24px;
+      margin: 100px auto 24px;
       font-size: 13px;
       color: var(--slate);
-      line-height: 1.6;
+      line-height: 1.7;
     }
-
-    .footer-note .gold {
-      color: var(--gold);
-      font-style: italic;
-    }
+    .footer-note .gold { color: var(--gold); font-weight: 700; }
   </style>
 </head>
 <body>
   <header class="page-header">
+    <div class="nb-mark">N</div>
     <h1>Noah</h1>
     <div class="gold-rule"></div>
-    <p class="tagline">Reading by osmosis.</p>
+    <p class="tagline">Reading by osmosis</p>
     <p class="lead">
-      Design preview — a kids' reading app that teaches by absorption. Named for Noah Webster, lexicographer and father of American literacy. The palette borrows the navy and embossed gold of his blue-backed speller. Below: nine key screens.
+      A reading app for kids 3–7 that teaches by absorption — see the word, say the word, know the word. Below: nine screens, designed to be warm, friendly, and a little magical.
     </p>
   </header>
 
@@ -709,14 +1094,13 @@
           <div class="splash">
             <div class="logo-mark">N</div>
             <h1>Noah</h1>
-            <div class="gold-rule"></div>
             <div class="tagline">Reading by osmosis</div>
-            <div class="footer-line">See it. Say it. Know it.</div>
+            <div class="footer-line">SEE IT · SAY IT · KNOW IT</div>
           </div>
         </div>
       </div>
       <div class="screen-label">1 — Splash</div>
-      <div class="screen-sub">First impression. Webster blue + embossed gold mark.</div>
+      <div class="screen-sub">First impression. Embossed gold mark on a midnight library sky.</div>
     </div>
 
     <!-- 2. Children list -->
@@ -730,39 +1114,39 @@
           <div class="app-content">
             <div class="app-header">
               <h2 class="noah-wordmark">Noah</h2>
-              <div class="gold-bar"></div>
-              <div class="subtitle">Reading by osmosis. Select a child to start.</div>
+              <div class="subtitle">Pick a reader</div>
             </div>
             <div class="app-body">
               <div class="card">
-                <div class="avatar">H</div>
+                <div class="avatar coral">H<span class="pet">🐰</span></div>
                 <div class="card-text">
                   <div class="card-name">Hans</div>
-                  <div class="card-meta">128 words • Kindergarten</div>
+                  <div class="card-meta">128 words · Kindergarten</div>
                 </div>
+                <div class="streak-badge">🔥 14</div>
                 <div class="chevron">›</div>
               </div>
               <div class="card">
-                <div class="avatar">E</div>
+                <div class="avatar sage">E<span class="pet">🦊</span></div>
                 <div class="card-text">
                   <div class="card-name">Emma</div>
-                  <div class="card-meta">42 words • Pre-K</div>
+                  <div class="card-meta">42 words · Pre-K</div>
                 </div>
                 <div class="chevron">›</div>
               </div>
-              <div style="height: 12px"></div>
-              <button class="btn-primary">+ Add a child</button>
+              <div style="height: 8px"></div>
+              <button class="btn-primary btn-outline">+ Add a reader</button>
             </div>
             <div class="tab-bar">
-              <div class="tab active"><div class="icon">👤</div>Children</div>
+              <div class="tab active"><div class="icon">👤</div>Readers</div>
               <div class="tab"><div class="icon">📚</div>Books</div>
               <div class="tab"><div class="icon">⚙️</div>Settings</div>
             </div>
           </div>
         </div>
       </div>
-      <div class="screen-label">2 — Children</div>
-      <div class="screen-sub">Home tab. One avatar per kid. Big "add child" CTA.</div>
+      <div class="screen-label">2 — Readers</div>
+      <div class="screen-sub">Each kid gets a color and a tiny animal friend. Streak shown right on the card.</div>
     </div>
 
     <!-- 3. Child profile -->
@@ -777,46 +1161,50 @@
             <div class="topbar">
               <div class="back">‹</div>
               <h3>Hans</h3>
+              <div class="right-action">⋯</div>
             </div>
-            <div class="app-body" style="padding-top: 12px;">
+            <div class="app-body">
               <div class="stats-row">
                 <div class="stat-tile">
+                  <span class="badge-emoji">📖</span>
                   <div class="number">128</div>
-                  <div class="label">Words known</div>
+                  <div class="label">Words</div>
                 </div>
                 <div class="stat-tile">
-                  <div class="number gold">14</div>
+                  <span class="badge-emoji">🔥</span>
+                  <div class="number coral">14</div>
                   <div class="label">Day streak</div>
                 </div>
                 <div class="stat-tile">
-                  <div class="number">7</div>
+                  <span class="badge-emoji">⭐</span>
+                  <div class="number gold">7</div>
                   <div class="label">Books</div>
                 </div>
               </div>
-              <div class="section-h">Practice</div>
+              <div class="section-h">Today's adventure</div>
               <div class="activity-grid">
                 <div class="activity-tile featured">
-                  <span class="icon">✦</span>
-                  <h4>Today's words</h4>
-                  <p>5 new words ready to absorb</p>
+                  <div class="icon-circle">✨</div>
+                  <h4>5 new words</h4>
+                  <p>From Peter Rabbit</p>
                 </div>
-                <div class="activity-tile">
-                  <span class="icon">📇</span>
+                <div class="activity-tile t-coral">
+                  <div class="icon-circle">📇</div>
                   <h4>Flashcards</h4>
                   <p>Mastery</p>
                 </div>
-                <div class="activity-tile">
-                  <span class="icon">🎯</span>
+                <div class="activity-tile t-gold">
+                  <div class="icon-circle">🎯</div>
                   <h4>Word Pop</h4>
                   <p>Find the word</p>
                 </div>
-                <div class="activity-tile">
-                  <span class="icon">📖</span>
+                <div class="activity-tile t-sage">
+                  <div class="icon-circle">📖</div>
                   <h4>Library</h4>
                   <p>7 books</p>
                 </div>
-                <div class="activity-tile">
-                  <span class="icon">📷</span>
+                <div class="activity-tile t-sky">
+                  <div class="icon-circle">📷</div>
                   <h4>Add page</h4>
                   <p>Scan a book</p>
                 </div>
@@ -826,7 +1214,7 @@
         </div>
       </div>
       <div class="screen-label">3 — Child profile</div>
-      <div class="screen-sub">Stats above the fold. "Today's words" is the hero CTA.</div>
+      <div class="screen-sub">"Today's adventure" hero. Each tile has a colored icon-shape, every kid gets play before chrome.</div>
     </div>
 
     <!-- 4. Flashcards -->
@@ -840,23 +1228,32 @@
           <div class="app-content">
             <div class="topbar">
               <div class="back">✕</div>
-              <h3 style="flex:1; text-align:center;">3 of 5</h3>
-              <div style="opacity:.5; font-size: 12px;">Skip</div>
+              <h3 style="flex:1; text-align:center; margin: 0 -36px;">Flashcards</h3>
+              <div style="font-size: 12px; font-weight: 700; color: var(--slate);">Skip</div>
             </div>
-            <div class="flashcard">
-              <div class="word">rabbit</div>
-              <div class="pron">/ˈrabɪt/</div>
-              <div class="speaker">🔊</div>
-            </div>
-            <div style="padding: 0 16px 20px; display: flex; gap: 10px;">
-              <button class="btn-primary btn-outline" style="flex:1;">Still learning</button>
-              <button class="btn-primary btn-gold" style="flex:1;">Got it</button>
+            <div class="flashcard-area">
+              <div class="progress-pip">
+                <div class="pip done"></div>
+                <div class="pip done"></div>
+                <div class="pip current"></div>
+                <div class="pip"></div>
+                <div class="pip"></div>
+              </div>
+              <div class="flashcard">
+                <div class="word">rabbit</div>
+                <div class="pron">/ˈrabɪt/</div>
+                <div class="speaker">🔊</div>
+              </div>
+              <div style="padding: 16px 0 18px; display: flex; gap: 10px;">
+                <button class="btn-primary btn-outline" style="flex:1;">Still learning</button>
+                <button class="btn-primary btn-gold" style="flex:1.2;">I got it!</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
       <div class="screen-label">4 — Flashcards</div>
-      <div class="screen-sub">Big serif word. Tap speaker = device TTS. Two-button decision.</div>
+      <div class="screen-sub">Card floats with soft glow circles. Big speaker bubble. Two big buttons, asymmetric so the win-CTA is bolder.</div>
     </div>
 
     <!-- 5. Word library -->
@@ -871,12 +1268,14 @@
             <div class="topbar">
               <div class="back">‹</div>
               <h3>Hans's words</h3>
+              <div class="right-action">🔍</div>
             </div>
-            <div class="app-body" style="padding-top: 12px;">
-              <div style="display:flex; gap:6px; margin-bottom: 12px;">
-                <span style="background: var(--navy); color: var(--cream); padding: 6px 12px; border-radius: 14px; font-size: 11px; font-weight: 600;">All 128</span>
-                <span style="background: var(--paper); border: 1px solid var(--parchment-edge); color: var(--slate); padding: 6px 12px; border-radius: 14px; font-size: 11px;">New</span>
-                <span style="background: var(--paper); border: 1px solid var(--parchment-edge); color: var(--slate); padding: 6px 12px; border-radius: 14px; font-size: 11px;">Mastered</span>
+            <div class="app-body">
+              <div class="pill-row">
+                <div class="pill active">All · 128</div>
+                <div class="pill">New · 32</div>
+                <div class="pill">Learning · 14</div>
+                <div class="pill">Mastered · 82</div>
               </div>
               <div class="word-list">
                 <div class="word-row">
@@ -897,11 +1296,11 @@
                 </div>
                 <div class="word-row">
                   <span class="word-text">sparrow</span>
-                  <span class="badge">New</span>
+                  <span class="badge new">New</span>
                 </div>
                 <div class="word-row">
                   <span class="word-text">whisker</span>
-                  <span class="badge">New</span>
+                  <span class="badge new">New</span>
                 </div>
                 <div class="word-row">
                   <span class="word-text">parsley</span>
@@ -913,7 +1312,7 @@
         </div>
       </div>
       <div class="screen-label">5 — Word library</div>
-      <div class="screen-sub">Filter pills. Status badges in gold + navy.</div>
+      <div class="screen-sub">Filter pills with counts. Rounded rows, three soft-color status badges.</div>
     </div>
 
     <!-- 6. Books library -->
@@ -928,41 +1327,43 @@
             <div class="topbar">
               <div class="back">‹</div>
               <h3>Hans's library</h3>
+              <div class="right-action">+</div>
             </div>
-            <div class="app-body" style="padding-top: 12px;">
-              <div class="section-h">Active</div>
-              <div class="card" style="background: var(--paper);">
-                <div style="width: 44px; height: 56px; border-radius: 4px; background: linear-gradient(135deg, var(--navy), var(--navy-dim)); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; color: var(--gold); font-family: 'Playfair Display', serif; font-size: 11px; text-align: center; padding: 4px;">Peter Rabbit</div>
+            <div class="app-body">
+              <div class="section-h">Reading now</div>
+              <div class="book-row">
+                <div class="book-spine b1">Peter Rabbit</div>
                 <div class="card-text">
                   <div class="card-name">The Tale of Peter Rabbit</div>
-                  <div class="card-meta">Beatrix Potter • 24/30 words</div>
+                  <div class="card-meta">Beatrix Potter</div>
+                  <div class="book-progress"><div class="fill" style="width: 80%"></div></div>
+                  <div class="card-meta" style="margin-top: 4px;">24 of 30 words</div>
                 </div>
-                <div class="chevron">›</div>
               </div>
-              <div class="card">
-                <div style="width: 44px; height: 56px; border-radius: 4px; background: var(--gold-pale); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; color: var(--navy); font-family: 'Playfair Display', serif; font-size: 11px; text-align: center; padding: 4px;">Benjamin Bunny</div>
+              <div class="book-row">
+                <div class="book-spine b2">Benjamin Bunny</div>
                 <div class="card-text">
                   <div class="card-name">The Tale of Benjamin Bunny</div>
-                  <div class="card-meta">Beatrix Potter • 8/22 words</div>
+                  <div class="card-meta">Beatrix Potter</div>
+                  <div class="book-progress"><div class="fill" style="width: 36%"></div></div>
+                  <div class="card-meta" style="margin-top: 4px;">8 of 22 words</div>
                 </div>
-                <div class="chevron">›</div>
               </div>
-              <div class="section-h">Available</div>
-              <div class="card">
-                <div style="width: 44px; height: 56px; border-radius: 4px; background: var(--warm-cream); border: 1px solid var(--parchment-edge); display: flex; align-items: center; justify-content: center; color: var(--slate); font-family: 'Playfair Display', serif; font-size: 11px; text-align: center; padding: 4px;">Twas the Night</div>
+              <div class="section-h">Up next</div>
+              <div class="book-row">
+                <div class="book-spine b3">Twas the Night</div>
                 <div class="card-text">
                   <div class="card-name">'Twas the Night Before Christmas</div>
-                  <div class="card-meta">Clement Clarke Moore • 1st grade</div>
+                  <div class="card-meta">Clement C. Moore · 1st grade</div>
                 </div>
                 <div class="chevron">›</div>
               </div>
-              <button class="btn-primary" style="margin-top: 12px;">+ Scan a new book</button>
             </div>
           </div>
         </div>
       </div>
       <div class="screen-label">6 — Books</div>
-      <div class="screen-sub">Active vs available. Mini covers nod to old book spines.</div>
+      <div class="screen-sub">Tilted spines hint at a real shelf. Progress bar on each active book.</div>
     </div>
 
     <!-- 7. Upload / scan -->
@@ -976,45 +1377,54 @@
           <div class="app-content">
             <div class="topbar">
               <div class="back">‹</div>
-              <h3>Scan a page</h3>
+              <h3>Add a page</h3>
             </div>
             <div class="upload-zone">
-              <div class="big-icon">📖</div>
-              <h3>Take a photo</h3>
-              <p>Snap a page from any book and Noah will pull out the words your child should learn next.</p>
-              <button class="btn-primary btn-gold" style="width: auto; padding: 10px 24px;">Open camera</button>
-              <button style="background: none; border: none; color: var(--slate); font-size: 12px; text-decoration: underline; cursor: pointer; font-family: inherit;">Or pick from photos</button>
+              <div class="scene">📖</div>
+              <h3>Snap a page</h3>
+              <p>Take a photo of any book page. Noah will pick out the words your child should learn next.</p>
+              <button class="btn-primary btn-gold" style="width: auto; padding: 14px 28px; margin-top: 4px;">📷 Open camera</button>
+              <button style="background: none; border: none; color: var(--slate); font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;">Or pick from photos</button>
             </div>
           </div>
         </div>
       </div>
       <div class="screen-label">7 — Scan a page</div>
-      <div class="screen-sub">OCR via Grok vision. One CTA. Friendly copy.</div>
+      <div class="screen-sub">A book in a warm halo. One inviting CTA. Adults' tool, but warm.</div>
     </div>
 
     <!-- 8. Magic moment -->
     <div class="screen-wrap">
       <div class="iphone">
         <div class="screen">
-          <div class="status-bar" style="color: var(--cream);">
+          <div class="status-bar" style="color: white;">
             <span>9:41</span>
             <div class="right"><span>5G</span><span>●●●</span></div>
           </div>
           <div class="magic-screen">
-            <div class="star">★</div>
-            <h3>You did it!</h3>
-            <div class="sentence">"The big rabbit ran into the garden."</div>
+            <div class="confetti">
+              <span>✨</span><span>⭐</span><span>✨</span><span>⭐</span><span>✨</span>
+            </div>
+            <div class="star-big">🌟</div>
+            <h3>You did it, Hans!</h3>
+            <div class="sentence">"The big rabbit ran into the garden after his mother."</div>
             <div class="speak-btn">🔊</div>
-            <p style="font-size: 12px; color: var(--gold-pale); font-style: italic;">A sentence with all five words you just learned.</p>
-            <button class="btn-primary btn-gold" style="margin-top: 16px;">Read it together</button>
+            <div class="word-chips">
+              <span class="chip">rabbit</span>
+              <span class="chip">garden</span>
+              <span class="chip">mother</span>
+              <span class="chip">jacket</span>
+              <span class="chip">sparrow</span>
+            </div>
+            <button class="btn-primary btn-gold" style="margin-top: 18px; width: auto; padding: 14px 28px;">Read it together</button>
           </div>
         </div>
       </div>
       <div class="screen-label">8 — Magic moment</div>
-      <div class="screen-sub">After Flashcards. AI-generated sentence using just-learned words.</div>
+      <div class="screen-sub">After flashcards: AI sentence using all just-learned words. Confetti, big speaker, the words shown as chips.</div>
     </div>
 
-    <!-- 9. Settings / parent -->
+    <!-- 9. Settings -->
     <div class="screen-wrap">
       <div class="iphone">
         <div class="screen">
@@ -1025,48 +1435,47 @@
           <div class="app-content">
             <div class="app-header">
               <h2>Settings</h2>
-              <div class="gold-bar"></div>
-              <div class="subtitle">Account, sync, and preferences</div>
+              <div class="subtitle">Account, sync, and reading</div>
             </div>
             <div class="app-body">
               <div class="section-h">Account</div>
               <div class="card">
-                <div style="width: 32px; text-align:center; font-size: 16px;">🍎</div>
+                <div class="avatar gold" style="font-size: 22px;">🍎</div>
                 <div class="card-text">
-                  <div class="card-name" style="font-size: 14px;">Sign in with Apple</div>
-                  <div class="card-meta">Sync across your devices</div>
+                  <div class="card-name">Sign in with Apple</div>
+                  <div class="card-meta">Sync words across devices</div>
                 </div>
                 <div class="chevron">›</div>
               </div>
               <div class="section-h">Reading</div>
               <div class="card">
-                <div style="width: 32px; text-align:center; font-size: 16px;">🔊</div>
+                <div class="avatar lavender" style="font-size: 22px;">🔊</div>
                 <div class="card-text">
-                  <div class="card-name" style="font-size: 14px;">Voice</div>
-                  <div class="card-meta">Samantha (US English)</div>
+                  <div class="card-name">Voice</div>
+                  <div class="card-meta">Samantha · US English</div>
                 </div>
                 <div class="chevron">›</div>
               </div>
               <div class="card">
-                <div style="width: 32px; text-align:center; font-size: 16px;">⚡</div>
+                <div class="avatar sky" style="font-size: 22px;">⚡</div>
                 <div class="card-text">
-                  <div class="card-name" style="font-size: 14px;">Speed</div>
+                  <div class="card-name">Speed</div>
                   <div class="card-meta">Slow</div>
                 </div>
                 <div class="chevron">›</div>
               </div>
-              <div class="section-h">About</div>
+              <div class="section-h">About Noah</div>
               <div class="card">
-                <div style="width: 32px; text-align:center; font-size: 16px;">📜</div>
+                <div class="avatar sage" style="font-size: 22px;">📜</div>
                 <div class="card-text">
-                  <div class="card-name" style="font-size: 14px;">Why "Noah"?</div>
+                  <div class="card-name">Why "Noah"?</div>
                   <div class="card-meta">The story behind the name</div>
                 </div>
                 <div class="chevron">›</div>
               </div>
             </div>
             <div class="tab-bar">
-              <div class="tab"><div class="icon">👤</div>Children</div>
+              <div class="tab"><div class="icon">👤</div>Readers</div>
               <div class="tab"><div class="icon">📚</div>Books</div>
               <div class="tab active"><div class="icon">⚙️</div>Settings</div>
             </div>
@@ -1074,13 +1483,12 @@
         </div>
       </div>
       <div class="screen-label">9 — Settings</div>
-      <div class="screen-sub">Sign in with Apple ↔ syncs to Supabase. The "Why Noah?" page tells the Webster story.</div>
+      <div class="screen-sub">Each row's icon gets its own colored chip. The "Why Noah?" page tells the Webster story.</div>
     </div>
   </div>
 
   <div class="footer-note">
-    <p><span class="gold">A note on the design:</span> serif type (Playfair Display) for headings and words echoes the dictionary's authority; clean sans-serif (Inter) keeps everything readable. Cream paper background, navy ink, gold accents — a 240-year-old book opened on a phone.</p>
-    <p style="margin-top: 12px;">Iterate freely — these are HTML mockups, not the actual app yet.</p>
+    <p><span class="gold">A note on this draft:</span> Fraunces (variable serif) carries the Noah wordmark and the words being learned. Nunito (rounded sans) does the rest. Caveat sneaks in for warm, hand-felt moments. The palette stays Webster-blue + embossed-gold but adds soft coral, sage, lavender, and sky for kid energy. Each child gets their own color and their own little animal companion.</p>
   </div>
 </body>
 </html>
