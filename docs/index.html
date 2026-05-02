@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Nunito:ital,wght@0,300..900;1,300..900&family=Caveat:wght@500;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&family=Nunito:ital,wght@0,300..900;1,300..900&family=Caveat:wght@500;700&display=swap"
     rel="stylesheet"
   />
   <style>
@@ -52,12 +52,25 @@
       padding: 56px 24px 80px;
     }
 
-    /* Brand wordmark — only place that uses Fraunces */
+    /* Brand wordmark — DM Serif Display rendered in embossed gold,
+       evoking the gilt lettering on a Webster's dictionary cover. */
     .noah-wordmark {
-      font-family: 'Fraunces', Georgia, serif;
-      font-variation-settings: 'opsz' 144, 'SOFT' 100;
-      font-weight: 900;
-      letter-spacing: -0.025em;
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-weight: 400;
+      letter-spacing: -0.005em;
+      background: linear-gradient(180deg, #F0CB6A 0%, #D4A847 50%, #B58A2E 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      filter: drop-shadow(0 1px 0 rgba(255, 235, 180, 0.25))
+              drop-shadow(0 -1px 0 rgba(80, 50, 0, 0.2));
+    }
+    /* When embossed gold sits on a light/cream background, swap the
+       drop-shadow direction for legibility */
+    .noah-wordmark.on-light {
+      filter: drop-shadow(0 1px 0 rgba(255, 235, 180, 0.7))
+              drop-shadow(0 1px 1px rgba(80, 50, 0, 0.15));
     }
 
     .page-header {
@@ -70,27 +83,42 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 88px;
-      height: 88px;
+      width: 92px;
+      height: 92px;
       background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%);
-      color: var(--gold);
       border-radius: 26px;
-      box-shadow: 0 12px 32px rgba(31, 58, 106, 0.25), inset 0 0 0 2px rgba(212, 168, 71, 0.5);
-      font-family: 'Fraunces', serif;
-      font-variation-settings: 'opsz' 144, 'SOFT' 80;
-      font-weight: 900;
-      font-size: 50px;
+      box-shadow:
+        0 14px 32px rgba(31, 58, 106, 0.28),
+        inset 0 0 0 2px rgba(212, 168, 71, 0.45);
+      font-family: 'DM Serif Display', serif;
+      font-weight: 400;
+      font-size: 58px;
       margin-bottom: 24px;
+      background-clip: padding-box;
+    }
+    .page-header .nb-mark span {
+      background: linear-gradient(180deg, #F0CB6A 0%, #D4A847 50%, #A8801E 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      filter: drop-shadow(0 1px 0 rgba(255, 240, 180, 0.3))
+              drop-shadow(0 -1px 0 rgba(60, 30, 0, 0.35));
     }
 
     .page-header h1 {
-      font-family: 'Fraunces', serif;
-      font-variation-settings: 'opsz' 144, 'SOFT' 100;
-      font-weight: 900;
-      font-size: 76px;
-      letter-spacing: -0.035em;
-      color: var(--navy);
+      font-family: 'DM Serif Display', serif;
+      font-weight: 400;
+      font-size: 88px;
+      letter-spacing: -0.005em;
       margin-bottom: 6px;
+      background: linear-gradient(180deg, #F0CB6A 0%, #D4A847 50%, #B58A2E 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      filter: drop-shadow(0 1px 0 rgba(255, 235, 180, 0.7))
+              drop-shadow(0 2px 1px rgba(80, 50, 0, 0.18));
     }
 
     .page-header .gold-rule {
@@ -225,7 +253,7 @@
     }
 
     .app-header h2.noah-wordmark {
-      font-size: 32px;
+      font-size: 36px;
     }
 
     .app-header .subtitle {
@@ -801,30 +829,40 @@
     }
 
     .splash .logo-mark {
-      width: 110px;
-      height: 110px;
-      border-radius: 32px;
-      background: linear-gradient(160deg, var(--gold-bright) 0%, var(--gold) 100%);
+      width: 108px;
+      height: 108px;
+      border-radius: 30px;
+      background: linear-gradient(160deg, #EFC669 0%, #D4A847 50%, #A8801E 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Fraunces', serif;
-      font-variation-settings: 'opsz' 144, 'SOFT' 60;
-      font-weight: 900;
-      font-size: 64px;
+      font-family: 'DM Serif Display', serif;
+      font-weight: 400;
+      font-size: 70px;
       color: var(--navy-deep);
-      margin-bottom: 28px;
-      box-shadow: 0 12px 40px rgba(212, 168, 71, 0.45), inset 0 -4px 0 rgba(0,0,0,0.08);
+      margin-bottom: 32px;
+      box-shadow:
+        0 14px 40px rgba(212, 168, 71, 0.5),
+        inset 0 2px 0 rgba(255, 245, 200, 0.5),
+        inset 0 -3px 0 rgba(80, 50, 0, 0.18);
+      text-shadow: 0 1px 0 rgba(255, 240, 180, 0.5);
     }
 
     .splash h1 {
-      font-family: 'Fraunces', serif;
-      font-variation-settings: 'opsz' 144, 'SOFT' 100;
-      font-size: 60px;
-      font-weight: 900;
-      letter-spacing: -0.03em;
-      color: var(--cream);
+      font-family: 'DM Serif Display', serif;
+      font-weight: 400;
+      font-size: 76px;
+      letter-spacing: -0.005em;
       margin-bottom: 10px;
+      /* Embossed gold on navy — the Webster cover treatment */
+      background: linear-gradient(180deg, #F0CB6A 0%, #D4A847 50%, #B58A2E 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      filter: drop-shadow(0 1px 0 rgba(255, 240, 180, 0.35))
+              drop-shadow(0 -1px 0 rgba(60, 30, 0, 0.4))
+              drop-shadow(0 3px 8px rgba(0, 0, 0, 0.15));
     }
 
     .splash .tagline {
@@ -1066,7 +1104,7 @@
 </head>
 <body>
   <header class="page-header">
-    <div class="nb-mark">N</div>
+    <div class="nb-mark"><span>N</span></div>
     <h1>Noah</h1>
     <div class="gold-rule"></div>
     <p class="tagline">Reading by osmosis</p>
@@ -1106,7 +1144,7 @@
           </div>
           <div class="app-content">
             <div class="app-header">
-              <h2 class="noah-wordmark">Noah</h2>
+              <h2 class="noah-wordmark on-light">Noah</h2>
               <div class="subtitle">Pick a reader</div>
             </div>
             <div class="app-body">
