@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.readwithnoah.app",
-      "buildNumber": "1.0.0",
+      "buildNumber": "1.0.1",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Noah uses your camera to photograph book pages so it can pull out the words your child is learning.",
@@ -25,7 +25,9 @@
         "NSMicrophoneUsageDescription": "Noah needs microphone access to hear your child read words during practice.",
         "NSUserTrackingUsageDescription": "Noah does not track you across other apps. Allowing this lets us measure how new readers find Noah so we can improve it.",
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       },
       "entitlements": {
         "aps-environment": "production"
