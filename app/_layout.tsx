@@ -45,6 +45,7 @@ export default function RootLayout() {
               <Stack.Screen name="child/[id]/books" />
               <Stack.Screen name="child/[id]/library" />
               <Stack.Screen name="child/[id]/upload" />
+              <Stack.Screen name="child/[id]/presets" />
             </Stack>
             <StatusBar style="auto" />
           </ChildrenProvider>

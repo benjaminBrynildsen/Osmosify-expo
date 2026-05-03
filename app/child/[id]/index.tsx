@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useChildren } from '../../../contexts/ChildrenContext';
 import { palette, fonts, radius, shadow } from '../../../lib/tokens';
 import { Button } from '../../../components/ui/Button';
+import * as storage from '../../../lib/storage';
 
 interface StatTileProps {
   value: string | number;
@@ -99,10 +100,21 @@ function ActivityTile({
 
 export default function ChildDashboardScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { children, words, sessions, loading, selectChild } = useChildren();
+  const { children, words, sessions, loading, selectChild, refreshData } = useChildren();
 
   const child = children.find((c) => c.id === id);
   const childWords = useMemo(() => words.filter((w) => w.childId === id), [words, id]);
+
+  // Backfill: any child whose library is empty when this screen opens
+  // gets the grade-appropriate starter pack auto-seeded. Covers
+  // children created before the auto-seed feature shipped.
+  useEffect(() => {
+    if (!id || !child) return;
+    if (childWords.length > 0) return;
+    storage.seedStarterWordsForChild(id, child.gradeLevel).then((added) => {
+      if (added > 0) refreshData();
+    });
+  }, [id, child, childWords.length, refreshData]);
   const childSessions = useMemo(
     () =>
       sessions
@@ -219,12 +231,19 @@ export default function ChildDashboardScreen() {
           <ActivityTile
             variant="sage"
             icon="📖"
-            title="Library"
-            subtitle={`${childWords.length} words`}
+            title="My library"
+            subtitle={`${childWords.length} word${childWords.length === 1 ? '' : 's'}`}
             onPress={() => router.push(`/child/${id}/library`)}
           />
           <ActivityTile
             variant="sky"
+            icon="📚"
+            title="Word sets"
+            subtitle="Grade-by-grade lists"
+            onPress={() => router.push(`/child/${id}/presets`)}
+          />
+          <ActivityTile
+            variant="gold"
             icon="📷"
             title="Add page"
             subtitle="Scan a book"
