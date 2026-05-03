@@ -17,12 +17,18 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.readwithnoah.app",
       "buildNumber": "1.0.0",
+      "usesAppleSignIn": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Noah uses your camera to photograph book pages for text extraction.",
-        "NSPhotoLibraryUsageDescription": "Noah accesses your photos to select book page images for text extraction.",
-        "NSSpeechRecognitionUsageDescription": "Noah uses speech recognition to check if words are read correctly.",
-        "NSMicrophoneUsageDescription": "Noah needs microphone access to listen when your child reads words aloud.",
-        "ITSAppUsesNonExemptEncryption": false
+        "NSCameraUsageDescription": "Noah uses your camera to photograph book pages so it can pull out the words your child is learning.",
+        "NSPhotoLibraryUsageDescription": "Noah uses your photos to select book page images for word extraction.",
+        "NSSpeechRecognitionUsageDescription": "Noah uses speech recognition to listen when your child reads words aloud.",
+        "NSMicrophoneUsageDescription": "Noah needs microphone access to hear your child read words during practice.",
+        "NSUserTrackingUsageDescription": "Noah does not track you across other apps. Allowing this lets us measure how new readers find Noah so we can improve it.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["remote-notification"]
+      },
+      "entitlements": {
+        "aps-environment": "production"
       }
     },
     "android": {
@@ -43,8 +49,19 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "Noah needs microphone access to listen when your child reads words aloud.",
-          "speechRecognitionPermission": "Noah uses speech recognition to check if words are read correctly."
+          "microphonePermission": "Noah needs microphone access to hear your child read words during practice.",
+          "speechRecognitionPermission": "Noah uses speech recognition to listen when your child reads words aloud."
+        }
+      ],
+      "expo-audio",
+      "expo-tracking-transparency",
+      "expo-apple-authentication",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#1F3A6A",
+          "defaultChannel": "default"
         }
       ]
     ],
