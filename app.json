@@ -38,7 +38,13 @@
       "versionCode": 1,
       "permissions": [
         "RECORD_AUDIO",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "com.google.android.gms.permission.AD_ID",
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "com.google.android.gms.permission.AD_ID"
       ]
     },
     "plugins": [
@@ -65,6 +71,12 @@
       "aiProxyUrl": "",
       "aiProxyToken": ""
     },
-    "owner": "hansfather"
+    "owner": "hansfather",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f6177f39-8a3c-4f0c-8274-8e4e9ad3ee87"
+    }
   }
 }
