@@ -91,7 +91,12 @@ export function ChildrenProvider({ children: reactChildren }: { children: React.
     };
     
     await storage.saveChild(newChild);
+    // Seed an age-appropriate starter pack so flashcards work day-1
+    await storage.seedStarterWordsForChild(newChild.id, gradeLevel);
     setChildren(prev => [...prev, newChild]);
+    // Refresh words list so the new starter words show up
+    const freshWords = await storage.getWords();
+    setWords(freshWords);
     return newChild;
   };
 

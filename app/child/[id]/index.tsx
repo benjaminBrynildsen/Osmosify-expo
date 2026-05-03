@@ -209,6 +209,14 @@ export default function ChildDashboardScreen() {
             disabled={childWords.length < 4}
           />
           <ActivityTile
+            variant="coral"
+            icon="🔥"
+            title="Lava Letters"
+            subtitle="Save the words!"
+            onPress={() => router.push(`/child/${id}/lava-letters`)}
+            disabled={childWords.length < 2}
+          />
+          <ActivityTile
             variant="sage"
             icon="📖"
             title="Library"

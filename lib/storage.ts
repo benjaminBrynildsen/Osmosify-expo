@@ -209,295 +209,459 @@ export const saveBookProgress = async (progress: ChildBookProgress): Promise<voi
   await setItem(STORAGE_KEYS.BOOK_PROGRESS, allProgress);
 };
 
-// Initialize preset data
+// Bump this when the preset content changes — older installs will
+// re-init their preset list on next launch.
+const PRESETS_VERSION_KEY = '@noah:presetsVersion';
+const PRESETS_VERSION = '2026-05-03-grade-organized';
+
+// Initialize preset data — grade-organized for early readers.
+// Naming convention: "<Grade Level> · <List Name>" so parents can
+// scan by age. Categories: phonics, sight_words, word_family,
+// everyday, alphabet.
 export const initializePresets = async (): Promise<void> => {
-  const existing = await getItem<PresetWordList>(STORAGE_KEYS.PRESETS);
-  if (existing.length > 0) return;
+  const currentVersion = await AsyncStorage.getItem(PRESETS_VERSION_KEY);
+  if (currentVersion === PRESETS_VERSION) return;
 
   const presets: PresetWordList[] = [
+    // ───────── Pre-K (ages 3-4) ─────────
     {
       id: uuidv4(),
-      name: 'Alphabet',
+      name: 'Pre-K · Alphabet',
       category: 'alphabet',
-      description: 'All letters A-Z',
+      description: 'All 26 letters of the alphabet',
+      gradeLevel: 'Pre-K',
       words: 'abcdefghijklmnopqrstuvwxyz'.split(''),
       sortOrder: 1,
     },
     {
       id: uuidv4(),
-      name: 'CVC Words - Short A',
-      category: 'cvc',
-      description: 'Consonant-vowel-consonant words with short a',
-      words: ['cat', 'hat', 'mat', 'sat', 'rat', 'bat', 'fat', 'pat', 'dad', 'mad', 'sad', 'bad', 'had', 'pad', 'jam', 'ham', 'yam', 'ram', 'can', 'man', 'pan', 'fan', 'ran', 'van', 'cap', 'map', 'tap', 'nap', 'sap', 'lap', 'bag', 'tag', 'wag', 'rag', 'nag'],
+      name: 'Pre-K · First Words',
+      category: 'sight_words',
+      description: 'The very first words a child learns to read',
+      gradeLevel: 'Pre-K',
+      words: ['mom', 'dad', 'cat', 'dog', 'sun', 'go', 'see', 'eat', 'big', 'me', 'I', 'a', 'the', 'is'],
       sortOrder: 2,
     },
     {
       id: uuidv4(),
-      name: 'CVC Words - Short E',
-      category: 'cvc',
-      description: 'Consonant-vowel-consonant words with short e',
-      words: ['bed', 'red', 'led', 'fed', 'wed', 'hen', 'pen', 'ten', 'men', 'den', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'vet', 'wet', 'beg', 'leg', 'peg', 'web'],
+      name: 'Pre-K · Family',
+      category: 'everyday',
+      description: 'Words about family — among the first words kids recognize',
+      gradeLevel: 'Pre-K',
+      words: ['mom', 'dad', 'mother', 'father', 'sister', 'brother', 'baby', 'grandma', 'grandpa', 'family', 'home', 'love'],
       sortOrder: 3,
     },
     {
       id: uuidv4(),
-      name: 'CVC Words - Short I',
-      category: 'cvc',
-      description: 'Consonant-vowel-consonant words with short i',
-      words: ['bib', 'rib', 'fib', 'big', 'dig', 'fig', 'gig', 'jig', 'pig', 'rig', 'wig', 'bin', 'fin', 'pin', 'tin', 'win', 'sin', 'dip', 'hip', 'lip', 'rip', 'sip', 'tip', 'zip', 'bit', 'fit', 'hit', 'kit', 'lit', 'pit', 'sit', 'wit'],
+      name: 'Pre-K · Colors',
+      category: 'everyday',
+      description: 'Color names — concrete and visual',
+      gradeLevel: 'Pre-K',
+      words: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white'],
       sortOrder: 4,
     },
     {
       id: uuidv4(),
-      name: 'CVC Words - Short O',
-      category: 'cvc',
-      description: 'Consonant-vowel-consonant words with short o',
-      words: ['bob', 'mob', 'rob', 'sob', 'cob', 'job', 'cog', 'dog', 'fog', 'hog', 'jog', 'log', 'dot', 'got', 'hot', 'jot', 'lot', 'not', 'pot', 'rot', 'cot', 'cod', 'rod', 'pod', 'hop', 'mop', 'pop', 'top'],
+      name: 'Pre-K · Numbers 1-10',
+      category: 'everyday',
+      description: 'Number words zero through ten',
+      gradeLevel: 'Pre-K',
+      words: ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'],
       sortOrder: 5,
     },
     {
       id: uuidv4(),
-      name: 'CVC Words - Short U',
-      category: 'cvc',
-      description: 'Consonant-vowel-consonant words with short u',
-      words: ['bud', 'cud', 'dud', 'mud', 'bug', 'dug', 'hug', 'jug', 'mug', 'pug', 'rug', 'tug', 'bun', 'fun', 'gun', 'nun', 'pun', 'run', 'sun', 'but', 'cut', 'gut', 'hut', 'jut', 'nut', 'rut', 'cup', 'pup', 'bus', 'sub', 'tub'],
+      name: 'Pre-K · Animals',
+      category: 'everyday',
+      description: 'Common animals — concrete and easy to picture',
+      gradeLevel: 'Pre-K',
+      words: ['cat', 'dog', 'cow', 'pig', 'duck', 'bird', 'fish', 'frog', 'bear', 'mouse'],
       sortOrder: 6,
     },
+
+    // ───────── Kindergarten (ages 4-5) ─────────
     {
       id: uuidv4(),
-      name: 'Dolch Pre-Primer',
+      name: 'Kindergarten · Dolch Pre-Primer',
       category: 'sight_words',
-      description: 'Essential sight words for early readers',
+      description: 'The 40 essential sight words every kindergartner learns',
+      gradeLevel: 'Kindergarten',
       words: ['a', 'and', 'away', 'big', 'blue', 'can', 'come', 'down', 'find', 'for', 'funny', 'go', 'help', 'here', 'I', 'in', 'is', 'it', 'jump', 'little', 'look', 'make', 'me', 'my', 'not', 'one', 'play', 'red', 'run', 'said', 'see', 'the', 'three', 'to', 'two', 'up', 'we', 'where', 'yellow', 'you'],
-      sortOrder: 7,
-    },
-    {
-      id: uuidv4(),
-      name: 'Dolch Primer',
-      category: 'sight_words',
-      description: 'Second level sight words',
-      words: ['all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came', 'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like', 'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran', 'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this', 'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will', 'with', 'yes'],
-      sortOrder: 8,
-    },
-    {
-      id: uuidv4(),
-      name: 'First Grade Sight Words',
-      category: 'sight_words',
-      description: 'Common first grade words',
-      words: ['after', 'again', 'an', 'any', 'as', 'ask', 'by', 'could', 'every', 'fly', 'from', 'give', 'giving', 'had', 'has', 'her', 'him', 'his', 'how', 'just', 'know', 'let', 'live', 'may', 'of', 'old', 'once', 'open', 'over', 'put', 'round', 'some', 'stop', 'take', 'thank', 'them', 'then', 'think', 'walk', 'were', 'when'],
-      sortOrder: 9,
-    },
-    {
-      id: uuidv4(),
-      name: 'Family Words',
-      category: 'sight_words',
-      description: 'Words about family',
-      words: ['mom', 'dad', 'mother', 'father', 'sister', 'brother', 'baby', 'grandma', 'grandpa', 'aunt', 'uncle', 'cousin', 'family', 'home', 'house', 'love'],
       sortOrder: 10,
     },
     {
       id: uuidv4(),
-      name: 'Colors',
-      category: 'sight_words',
-      description: 'Color words',
-      words: ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'black', 'white', 'gray', 'gold', 'silver'],
+      name: 'Kindergarten · CVC Short A',
+      category: 'phonics',
+      description: 'Three-letter words with the short-a sound (cat, hat, sat)',
+      gradeLevel: 'Kindergarten',
+      words: ['cat', 'hat', 'mat', 'sat', 'rat', 'bat', 'fat', 'pat', 'mad', 'sad', 'bad', 'had', 'jam', 'ham', 'can', 'man', 'pan', 'fan', 'ran', 'cap', 'map', 'tap', 'bag', 'tag'],
       sortOrder: 11,
     },
     {
       id: uuidv4(),
-      name: 'Numbers',
-      category: 'sight_words',
-      description: 'Number words 1-20',
-      words: ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'],
+      name: 'Kindergarten · CVC Short E',
+      category: 'phonics',
+      description: 'Three-letter words with the short-e sound (bed, red, ten)',
+      gradeLevel: 'Kindergarten',
+      words: ['bed', 'red', 'led', 'fed', 'hen', 'pen', 'ten', 'men', 'get', 'jet', 'let', 'met', 'net', 'pet', 'set', 'wet', 'leg', 'web'],
       sortOrder: 12,
     },
     {
       id: uuidv4(),
-      name: 'Animals',
-      category: 'sight_words',
-      description: 'Common animal words',
-      words: ['cat', 'dog', 'bird', 'fish', 'cow', 'pig', 'horse', 'sheep', 'duck', 'chicken', 'mouse', 'rabbit', 'frog', 'bear', 'lion', 'tiger', 'elephant', 'monkey', 'snake', 'turtle'],
+      name: 'Kindergarten · CVC Short I',
+      category: 'phonics',
+      description: 'Three-letter words with the short-i sound (big, pig, sit)',
+      gradeLevel: 'Kindergarten',
+      words: ['big', 'dig', 'pig', 'wig', 'fig', 'bin', 'pin', 'tin', 'win', 'fin', 'dip', 'lip', 'sip', 'tip', 'zip', 'bit', 'fit', 'hit', 'sit', 'lit', 'pit'],
       sortOrder: 13,
     },
     {
       id: uuidv4(),
-      name: 'Dolch Second Grade',
-      category: 'sight_words',
-      description: 'Sight words taught in 2nd grade',
-      words: ['always', 'around', 'because', 'been', 'before', 'best', 'both', 'buy', 'call', 'cold', 'does', 'don\'t', 'fast', 'first', 'five', 'found', 'gave', 'goes', 'green', 'its', 'made', 'many', 'off', 'or', 'pull', 'read', 'right', 'sing', 'sit', 'sleep', 'tell', 'their', 'these', 'those', 'upon', 'us', 'use', 'very', 'wash', 'which', 'why', 'wish', 'work', 'would', 'write', 'your'],
+      name: 'Kindergarten · CVC Short O',
+      category: 'phonics',
+      description: 'Three-letter words with the short-o sound (dog, hot, top)',
+      gradeLevel: 'Kindergarten',
+      words: ['dog', 'log', 'fog', 'hog', 'jog', 'hot', 'pot', 'lot', 'got', 'not', 'dot', 'cot', 'rod', 'pod', 'hop', 'mop', 'pop', 'top', 'box', 'fox'],
       sortOrder: 14,
     },
     {
       id: uuidv4(),
-      name: 'Dolch Third Grade',
-      category: 'sight_words',
-      description: 'Sight words taught in 3rd grade',
-      words: ['about', 'better', 'bring', 'carry', 'clean', 'cut', 'done', 'draw', 'drink', 'eight', 'fall', 'far', 'full', 'got', 'grow', 'hold', 'hot', 'hurt', 'if', 'keep', 'kind', 'laugh', 'light', 'long', 'much', 'myself', 'never', 'only', 'own', 'pick', 'seven', 'shall', 'show', 'six', 'small', 'start', 'ten', 'today', 'together', 'try', 'warm'],
+      name: 'Kindergarten · CVC Short U',
+      category: 'phonics',
+      description: 'Three-letter words with the short-u sound (sun, cup, run)',
+      gradeLevel: 'Kindergarten',
+      words: ['sun', 'fun', 'run', 'bun', 'gun', 'bug', 'hug', 'jug', 'mug', 'rug', 'tug', 'cup', 'pup', 'cut', 'but', 'nut', 'gut', 'hut', 'tub', 'mud'],
       sortOrder: 15,
     },
     {
       id: uuidv4(),
-      name: 'Dolch Nouns',
-      category: 'sight_words',
-      description: 'The 95 most common nouns kids meet first',
-      words: ['apple', 'baby', 'back', 'ball', 'bear', 'bed', 'bell', 'bird', 'birthday', 'boat', 'box', 'boy', 'bread', 'brother', 'cake', 'car', 'cat', 'chair', 'chicken', 'children', 'Christmas', 'coat', 'corn', 'cow', 'day', 'dog', 'doll', 'door', 'duck', 'egg', 'eye', 'farm', 'farmer', 'father', 'feet', 'fire', 'fish', 'floor', 'flower', 'game', 'garden', 'girl', 'good-bye', 'grass', 'ground', 'hand', 'head', 'hill', 'home', 'horse', 'house', 'kitty', 'leg', 'letter', 'man', 'men', 'milk', 'money', 'morning', 'mother', 'name', 'nest', 'night', 'paper', 'party', 'picture', 'pig', 'rabbit', 'rain', 'ring', 'robin', 'Santa Claus', 'school', 'seed', 'sheep', 'shoe', 'sister', 'snow', 'song', 'squirrel', 'stick', 'street', 'sun', 'table', 'thing', 'time', 'top', 'toy', 'tree', 'watch', 'water', 'way', 'wind', 'window', 'wood'],
+      name: 'Kindergarten · Body Parts',
+      category: 'everyday',
+      description: 'Parts of the body — concrete and pointable',
+      gradeLevel: 'Kindergarten',
+      words: ['head', 'face', 'eye', 'ear', 'nose', 'mouth', 'arm', 'hand', 'leg', 'foot', 'hair', 'tooth'],
       sortOrder: 16,
     },
     {
       id: uuidv4(),
-      name: 'Fry First 100',
-      category: 'sight_words',
-      description: 'The 100 most common English words — covers about 50% of all reading',
-      words: ['the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that', 'it', 'he', 'was', 'for', 'on', 'are', 'as', 'with', 'his', 'they', 'I', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by', 'word', 'but', 'not', 'what', 'all', 'were', 'we', 'when', 'your', 'can', 'said', 'there', 'use', 'an', 'each', 'which', 'she', 'do', 'how', 'their', 'if', 'will', 'up', 'other', 'about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'him', 'into', 'time', 'has', 'look', 'two', 'more', 'write', 'go', 'see', 'number', 'no', 'way', 'could', 'people', 'my', 'than', 'first', 'water', 'been', 'call', 'who', 'oil', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get', 'come', 'made', 'may', 'part'],
+      name: 'Kindergarten · Action Words',
+      category: 'everyday',
+      description: 'Verbs kids do every day',
+      gradeLevel: 'Kindergarten',
+      words: ['run', 'jump', 'walk', 'hop', 'play', 'sing', 'eat', 'drink', 'sleep', 'sit', 'stand', 'hug', 'laugh', 'smile'],
       sortOrder: 17,
     },
+
+    // ───────── 1st Grade (ages 5-6) ─────────
     {
       id: uuidv4(),
-      name: 'Word Family: -at',
-      category: 'word_family',
-      description: 'Rhyming words ending in -at',
-      words: ['cat', 'bat', 'hat', 'mat', 'rat', 'sat', 'fat', 'pat', 'flat', 'chat', 'that', 'splat'],
+      name: '1st Grade · Dolch Primer',
+      category: 'sight_words',
+      description: 'The 52 sight words after Pre-Primer — second tier',
+      gradeLevel: '1st Grade',
+      words: ['all', 'am', 'are', 'at', 'ate', 'be', 'black', 'brown', 'but', 'came', 'did', 'do', 'eat', 'four', 'get', 'good', 'have', 'he', 'into', 'like', 'must', 'new', 'no', 'now', 'on', 'our', 'out', 'please', 'pretty', 'ran', 'ride', 'saw', 'say', 'she', 'so', 'soon', 'that', 'there', 'they', 'this', 'too', 'under', 'want', 'was', 'well', 'went', 'what', 'white', 'who', 'will', 'with', 'yes'],
       sortOrder: 20,
     },
     {
       id: uuidv4(),
-      name: 'Word Family: -an',
-      category: 'word_family',
-      description: 'Rhyming words ending in -an',
-      words: ['can', 'man', 'pan', 'fan', 'ran', 'tan', 'van', 'plan', 'than', 'span'],
+      name: '1st Grade · Dolch List',
+      category: 'sight_words',
+      description: 'The 41 sight words taught in 1st grade',
+      gradeLevel: '1st Grade',
+      words: ['after', 'again', 'an', 'any', 'as', 'ask', 'by', 'could', 'every', 'fly', 'from', 'give', 'going', 'had', 'has', 'her', 'him', 'his', 'how', 'just', 'know', 'let', 'live', 'may', 'of', 'old', 'once', 'open', 'over', 'put', 'round', 'some', 'stop', 'take', 'thank', 'them', 'then', 'think', 'walk', 'were', 'when'],
       sortOrder: 21,
     },
     {
       id: uuidv4(),
-      name: 'Word Family: -ig',
+      name: '1st Grade · Word Family -at',
       category: 'word_family',
-      description: 'Rhyming words ending in -ig',
-      words: ['big', 'dig', 'fig', 'jig', 'pig', 'rig', 'wig', 'twig', 'sprig'],
+      description: 'Rhyming -at words (cat, hat, that)',
+      gradeLevel: '1st Grade',
+      words: ['cat', 'bat', 'hat', 'mat', 'rat', 'sat', 'fat', 'pat', 'flat', 'chat', 'that', 'splat'],
       sortOrder: 22,
     },
     {
       id: uuidv4(),
-      name: 'Word Family: -og',
+      name: '1st Grade · Word Family -an',
       category: 'word_family',
-      description: 'Rhyming words ending in -og',
-      words: ['dog', 'fog', 'log', 'jog', 'hog', 'bog', 'cog', 'frog', 'clog', 'smog'],
+      description: 'Rhyming -an words (can, ran, plan)',
+      gradeLevel: '1st Grade',
+      words: ['can', 'man', 'pan', 'fan', 'ran', 'tan', 'van', 'plan', 'than'],
       sortOrder: 23,
     },
     {
       id: uuidv4(),
-      name: 'Word Family: -ug',
+      name: '1st Grade · Word Family -ig',
       category: 'word_family',
-      description: 'Rhyming words ending in -ug',
-      words: ['bug', 'hug', 'jug', 'mug', 'pug', 'rug', 'tug', 'plug', 'snug', 'shrug'],
+      description: 'Rhyming -ig words (big, pig, twig)',
+      gradeLevel: '1st Grade',
+      words: ['big', 'dig', 'fig', 'jig', 'pig', 'rig', 'wig', 'twig'],
       sortOrder: 24,
     },
     {
       id: uuidv4(),
-      name: 'Word Family: -ake',
+      name: '1st Grade · Word Family -og',
       category: 'word_family',
-      description: 'Long-A words ending in -ake',
-      words: ['cake', 'bake', 'lake', 'make', 'rake', 'take', 'wake', 'snake', 'shake', 'flake', 'brake'],
+      description: 'Rhyming -og words (dog, log, frog)',
+      gradeLevel: '1st Grade',
+      words: ['dog', 'fog', 'log', 'jog', 'hog', 'bog', 'frog', 'clog'],
       sortOrder: 25,
     },
     {
       id: uuidv4(),
-      name: 'Word Family: -ike',
+      name: '1st Grade · Word Family -ug',
       category: 'word_family',
-      description: 'Long-I words ending in -ike',
-      words: ['bike', 'hike', 'like', 'pike', 'spike', 'strike', 'dislike'],
+      description: 'Rhyming -ug words (bug, hug, plug)',
+      gradeLevel: '1st Grade',
+      words: ['bug', 'hug', 'jug', 'mug', 'pug', 'rug', 'tug', 'plug', 'snug'],
       sortOrder: 26,
     },
     {
       id: uuidv4(),
-      name: 'Word Family: -ight',
-      category: 'word_family',
-      description: 'Long-I words spelled -ight',
-      words: ['light', 'might', 'night', 'right', 'sight', 'tight', 'fight', 'bright', 'flight', 'fright', 'knight'],
+      name: '1st Grade · Digraphs sh-',
+      category: 'phonics',
+      description: 'The sh- sound — two letters that make one new sound',
+      gradeLevel: '1st Grade',
+      words: ['she', 'ship', 'shop', 'shut', 'shoe', 'shell', 'shark', 'sheep', 'short'],
       sortOrder: 27,
     },
     {
       id: uuidv4(),
-      name: 'Digraphs: sh-',
+      name: '1st Grade · Digraphs ch-',
       category: 'phonics',
-      description: 'Words starting with the sh- sound',
-      words: ['she', 'ship', 'shop', 'shut', 'shoe', 'shell', 'shark', 'sheep', 'short', 'shower'],
+      description: 'The ch- sound — soft and crunchy',
+      gradeLevel: '1st Grade',
+      words: ['chip', 'chop', 'chin', 'chest', 'cheek', 'chick', 'child', 'chair', 'cherry'],
+      sortOrder: 28,
+    },
+    {
+      id: uuidv4(),
+      name: '1st Grade · Digraphs th-',
+      category: 'phonics',
+      description: 'The th- sound — common at the start of small words',
+      gradeLevel: '1st Grade',
+      words: ['the', 'this', 'that', 'they', 'them', 'then', 'there', 'thing', 'think', 'three', 'thumb'],
+      sortOrder: 29,
+    },
+    {
+      id: uuidv4(),
+      name: '1st Grade · Days of the Week',
+      category: 'everyday',
+      description: 'The seven days of the week',
+      gradeLevel: '1st Grade',
+      words: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
       sortOrder: 30,
     },
     {
       id: uuidv4(),
-      name: 'Digraphs: ch-',
-      category: 'phonics',
-      description: 'Words starting with the ch- sound',
-      words: ['chip', 'chop', 'chin', 'chest', 'cheek', 'cheese', 'chick', 'child', 'chair', 'cherry'],
+      name: '1st Grade · Weather Words',
+      category: 'everyday',
+      description: 'Words about weather and the sky',
+      gradeLevel: '1st Grade',
+      words: ['sun', 'sunny', 'cloud', 'rain', 'rainy', 'snow', 'wind', 'hot', 'cold', 'warm', 'storm', 'rainbow', 'sky'],
       sortOrder: 31,
     },
     {
       id: uuidv4(),
-      name: 'Digraphs: th-',
-      category: 'phonics',
-      description: 'Words starting with the th- sound',
-      words: ['the', 'this', 'that', 'they', 'them', 'then', 'there', 'thing', 'think', 'three', 'thumb'],
+      name: '1st Grade · Numbers 1-20',
+      category: 'everyday',
+      description: 'Number words eleven through twenty (Pre-K covers 1-10)',
+      gradeLevel: '1st Grade',
+      words: ['eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'],
       sortOrder: 32,
     },
     {
       id: uuidv4(),
-      name: 'Days of the Week',
+      name: '1st Grade · Food Words',
       category: 'everyday',
-      description: 'Sunday through Saturday',
-      words: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      description: 'Common food words kids see in stories',
+      gradeLevel: '1st Grade',
+      words: ['apple', 'banana', 'bread', 'cheese', 'milk', 'water', 'juice', 'egg', 'cake', 'cookie', 'pizza', 'fish'],
+      sortOrder: 33,
+    },
+
+    // ───────── 2nd Grade (ages 6-7) ─────────
+    {
+      id: uuidv4(),
+      name: '2nd Grade · Dolch List',
+      category: 'sight_words',
+      description: 'The 46 sight words taught in 2nd grade',
+      gradeLevel: '2nd Grade',
+      words: ['always', 'around', 'because', 'been', 'before', 'best', 'both', 'buy', 'call', 'cold', 'does', "don't", 'fast', 'first', 'five', 'found', 'gave', 'goes', 'green', 'its', 'made', 'many', 'off', 'or', 'pull', 'read', 'right', 'sing', 'sit', 'sleep', 'tell', 'their', 'these', 'those', 'upon', 'us', 'use', 'very', 'wash', 'which', 'why', 'wish', 'work', 'would', 'write', 'your'],
       sortOrder: 40,
     },
     {
       id: uuidv4(),
-      name: 'Months of the Year',
-      category: 'everyday',
-      description: 'All twelve months',
-      words: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+      name: '2nd Grade · Word Family -ake',
+      category: 'word_family',
+      description: 'Long-A words ending in -ake (cake, bake, snake)',
+      gradeLevel: '2nd Grade',
+      words: ['cake', 'bake', 'lake', 'make', 'rake', 'take', 'wake', 'snake', 'shake', 'flake'],
       sortOrder: 41,
     },
     {
       id: uuidv4(),
-      name: 'Body Parts',
-      category: 'everyday',
-      description: 'Words for parts of the body',
-      words: ['head', 'face', 'eye', 'ear', 'nose', 'mouth', 'lip', 'tooth', 'tongue', 'chin', 'neck', 'arm', 'hand', 'finger', 'thumb', 'leg', 'knee', 'foot', 'toe', 'hair', 'back', 'belly'],
+      name: '2nd Grade · Word Family -ike',
+      category: 'word_family',
+      description: 'Long-I words ending in -ike (bike, hike, like)',
+      gradeLevel: '2nd Grade',
+      words: ['bike', 'hike', 'like', 'pike', 'spike', 'strike'],
       sortOrder: 42,
     },
     {
       id: uuidv4(),
-      name: 'Action Words',
-      category: 'everyday',
-      description: 'Common verbs kids do every day',
-      words: ['run', 'jump', 'walk', 'hop', 'skip', 'play', 'sing', 'dance', 'eat', 'drink', 'sleep', 'read', 'write', 'draw', 'sit', 'stand', 'climb', 'swim', 'throw', 'catch', 'kick', 'hug', 'kiss', 'laugh', 'smile', 'cry'],
+      name: '2nd Grade · Word Family -ight',
+      category: 'word_family',
+      description: 'Long-I words spelled -ight (light, night, bright)',
+      gradeLevel: '2nd Grade',
+      words: ['light', 'might', 'night', 'right', 'sight', 'tight', 'fight', 'bright', 'flight', 'knight'],
       sortOrder: 43,
     },
     {
       id: uuidv4(),
-      name: 'Food Words',
+      name: '2nd Grade · Opposites',
       category: 'everyday',
-      description: 'Common food words kids see in stories',
-      words: ['apple', 'banana', 'bread', 'cheese', 'milk', 'water', 'juice', 'egg', 'cake', 'cookie', 'candy', 'ice', 'cream', 'pizza', 'soup', 'rice', 'pasta', 'corn', 'meat', 'fish'],
+      description: 'Pairs of opposite words',
+      gradeLevel: '2nd Grade',
+      words: ['big', 'small', 'hot', 'cold', 'fast', 'slow', 'up', 'down', 'in', 'out', 'open', 'closed', 'happy', 'sad', 'good', 'bad', 'old', 'new', 'tall', 'short'],
       sortOrder: 44,
     },
     {
       id: uuidv4(),
-      name: 'Weather Words',
+      name: '2nd Grade · Months of the Year',
       category: 'everyday',
-      description: 'Words about weather and the sky',
-      words: ['sun', 'sunny', 'cloud', 'cloudy', 'rain', 'rainy', 'snow', 'snowy', 'wind', 'windy', 'hot', 'cold', 'warm', 'cool', 'storm', 'thunder', 'lightning', 'rainbow', 'sky'],
+      description: 'All twelve months',
+      gradeLevel: '2nd Grade',
+      words: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
       sortOrder: 45,
+    },
+
+    // ───────── 3rd Grade (ages 7-8) ─────────
+    {
+      id: uuidv4(),
+      name: '3rd Grade · Dolch List',
+      category: 'sight_words',
+      description: 'The 41 sight words taught in 3rd grade',
+      gradeLevel: '3rd Grade',
+      words: ['about', 'better', 'bring', 'carry', 'clean', 'cut', 'done', 'draw', 'drink', 'eight', 'fall', 'far', 'full', 'got', 'grow', 'hold', 'hot', 'hurt', 'if', 'keep', 'kind', 'laugh', 'light', 'long', 'much', 'myself', 'never', 'only', 'own', 'pick', 'seven', 'shall', 'show', 'six', 'small', 'start', 'ten', 'today', 'together', 'try', 'warm'],
+      sortOrder: 50,
     },
     {
       id: uuidv4(),
-      name: 'Opposites',
-      category: 'everyday',
-      description: 'Pairs of opposite words',
-      words: ['big', 'small', 'hot', 'cold', 'fast', 'slow', 'up', 'down', 'in', 'out', 'on', 'off', 'open', 'closed', 'happy', 'sad', 'good', 'bad', 'old', 'new', 'wet', 'dry', 'soft', 'hard', 'tall', 'short', 'thick', 'thin', 'light', 'dark'],
-      sortOrder: 46,
+      name: '3rd Grade · Dolch Nouns',
+      category: 'sight_words',
+      description: 'The 95 most common nouns kids meet in books',
+      gradeLevel: '3rd Grade',
+      words: ['apple', 'baby', 'back', 'ball', 'bear', 'bed', 'bell', 'bird', 'birthday', 'boat', 'box', 'boy', 'bread', 'brother', 'cake', 'car', 'cat', 'chair', 'chicken', 'children', 'coat', 'corn', 'cow', 'day', 'dog', 'doll', 'door', 'duck', 'egg', 'eye', 'farm', 'farmer', 'father', 'feet', 'fire', 'fish', 'floor', 'flower', 'game', 'garden', 'girl', 'grass', 'ground', 'hand', 'head', 'hill', 'home', 'horse', 'house', 'kitty', 'leg', 'letter', 'man', 'men', 'milk', 'money', 'morning', 'mother', 'name', 'nest', 'night', 'paper', 'party', 'picture', 'pig', 'rabbit', 'rain', 'ring', 'robin', 'school', 'seed', 'sheep', 'shoe', 'sister', 'snow', 'song', 'squirrel', 'stick', 'street', 'sun', 'table', 'thing', 'time', 'top', 'toy', 'tree', 'watch', 'water', 'way', 'wind', 'window', 'wood'],
+      sortOrder: 51,
+    },
+    {
+      id: uuidv4(),
+      name: '3rd Grade · Fry First 100',
+      category: 'sight_words',
+      description: 'The 100 most common English words — covers ~50% of all reading',
+      gradeLevel: '3rd Grade',
+      words: ['the', 'of', 'and', 'a', 'to', 'in', 'is', 'you', 'that', 'it', 'he', 'was', 'for', 'on', 'are', 'as', 'with', 'his', 'they', 'I', 'at', 'be', 'this', 'have', 'from', 'or', 'one', 'had', 'by', 'word', 'but', 'not', 'what', 'all', 'were', 'we', 'when', 'your', 'can', 'said', 'there', 'use', 'an', 'each', 'which', 'she', 'do', 'how', 'their', 'if', 'will', 'up', 'other', 'about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'him', 'into', 'time', 'has', 'look', 'two', 'more', 'write', 'go', 'see', 'number', 'no', 'way', 'could', 'people', 'my', 'than', 'first', 'water', 'been', 'call', 'who', 'oil', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get', 'come', 'made', 'may', 'part'],
+      sortOrder: 52,
     },
   ];
 
   await setItem(STORAGE_KEYS.PRESETS, presets);
+  await AsyncStorage.setItem(PRESETS_VERSION_KEY, PRESETS_VERSION);
+};
+
+/**
+ * Auto-seed a child's word library with an age-appropriate starter pack
+ * so they can begin practicing on day 1. Mapped by gradeLevel.
+ */
+const STARTER_PACK_BY_GRADE: Record<string, string[]> = {
+  'Pre-K': ['Pre-K · First Words', 'Pre-K · Family', 'Pre-K · Colors', 'Pre-K · Numbers 1-10'],
+  'Kindergarten': ['Kindergarten · Dolch Pre-Primer', 'Kindergarten · CVC Short A', 'Kindergarten · Body Parts'],
+  '1st Grade': ['1st Grade · Dolch Primer', '1st Grade · Word Family -at', '1st Grade · Days of the Week'],
+  '2nd Grade': ['2nd Grade · Dolch List', '2nd Grade · Word Family -ake', '2nd Grade · Opposites'],
+  '3rd Grade': ['3rd Grade · Dolch List', '3rd Grade · Fry First 100'],
+};
+
+export const seedStarterWordsForChild = async (
+  childId: string,
+  gradeLevel: string | undefined,
+): Promise<number> => {
+  await initializePresets();
+  const presets = await getItem<PresetWordList>(STORAGE_KEYS.PRESETS);
+  const grade = gradeLevel && STARTER_PACK_BY_GRADE[gradeLevel] ? gradeLevel : 'Kindergarten';
+  const targetNames = STARTER_PACK_BY_GRADE[grade] || [];
+  const targetSets = presets.filter((p) => targetNames.includes(p.name));
+
+  const wordSet = new Set<string>();
+  for (const set of targetSets) {
+    for (const w of set.words) wordSet.add(w.toLowerCase());
+  }
+  if (wordSet.size === 0) return 0;
+
+  const existing = await getWords();
+  const alreadyHave = new Set(
+    existing.filter((w) => w.childId === childId).map((w) => w.word.toLowerCase()),
+  );
+
+  const now = new Date().toISOString();
+  const newWords: Word[] = [];
+  for (const w of wordSet) {
+    if (alreadyHave.has(w)) continue;
+    newWords.push({
+      id: uuidv4(),
+      childId,
+      word: w,
+      firstSeen: now,
+      lastSeen: now,
+      totalOccurrences: 1,
+      sessionsSeenCount: 0,
+      status: 'new',
+      masteryCorrectCount: 0,
+      incorrectCount: 0,
+    });
+  }
+  if (newWords.length === 0) return 0;
+
+  await setItem(STORAGE_KEYS.WORDS, [...existing, ...newWords]);
+  return newWords.length;
+};
+
+/**
+ * Add all words from a single preset list to a child's library.
+ * Returns the count of words added (excludes duplicates).
+ */
+export const addPresetToChild = async (childId: string, presetId: string): Promise<number> => {
+  const preset = await getPresetById(presetId);
+  if (!preset) return 0;
+
+  const existing = await getWords();
+  const alreadyHave = new Set(
+    existing.filter((w) => w.childId === childId).map((w) => w.word.toLowerCase()),
+  );
+
+  const now = new Date().toISOString();
+  const newWords: Word[] = [];
+  for (const raw of preset.words) {
+    const w = raw.toLowerCase();
+    if (alreadyHave.has(w)) continue;
+    newWords.push({
+      id: uuidv4(),
+      childId,
+      word: w,
+      firstSeen: now,
+      lastSeen: now,
+      totalOccurrences: 1,
+      sessionsSeenCount: 0,
+      status: 'new',
+      masteryCorrectCount: 0,
+      incorrectCount: 0,
+    });
+  }
+  if (newWords.length === 0) return 0;
+
+  await setItem(STORAGE_KEYS.WORDS, [...existing, ...newWords]);
+  return newWords.length;
 };
 
 export const getPresets = async (): Promise<PresetWordList[]> => {

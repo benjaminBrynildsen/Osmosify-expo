@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Poll the latest iOS build until it finishes, then submit to TestFlight.
+# Poll the latest iOS build until it finishes, then submit to TestFlight
+# via the interactive submit-driver (the eas.json submit profile alone
+# can't auth without the driver picking the existing ASC API key).
 
 set -u
-BUILD_ID="bd659144-8123-40c6-9858-83e2cfd0c87b"
+BUILD_ID="438f2910-bebf-4d23-9d65-587a844a6e95"
 LOG=/tmp/eas-build-watch.log
 STATE=/tmp/eas-build-watch.state
 
@@ -16,8 +18,6 @@ echo "starting" > "$STATE"
 echo "[$(date +%H:%M:%S)] Watching build $BUILD_ID" > "$LOG"
 
 while true; do
-  # Use the text output and grep for Status — JSON parsing was flaky
-  # because npm puts upgrade warnings on stderr that bleed into stdout.
   STATUS=$(npx eas-cli build:view "$BUILD_ID" 2>/dev/null | grep -E "^Status" | awk '{$1=""; print $0}' | xargs)
   echo "[$(date +%H:%M:%S)] status=${STATUS:-EMPTY}" >> "$LOG"
   if [ -n "$STATUS" ]; then
@@ -26,9 +26,9 @@ while true; do
 
   case "$STATUS" in
     finished)
-      echo "[$(date +%H:%M:%S)] BUILD FINISHED — submitting to TestFlight" >> "$LOG"
+      echo "[$(date +%H:%M:%S)] BUILD FINISHED — running submit driver" >> "$LOG"
       echo "submitting" > "$STATE"
-      npx eas-cli submit --platform ios --id "$BUILD_ID" --non-interactive >> "$LOG" 2>&1
+      python3 /home/wolfgang/Noah/submit-driver.py "$BUILD_ID" >> "$LOG" 2>&1
       RC=$?
       if [ $RC -eq 0 ]; then
         echo "submit_success" > "$STATE"
