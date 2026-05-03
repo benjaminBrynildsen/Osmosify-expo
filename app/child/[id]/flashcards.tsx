@@ -114,7 +114,7 @@ export default function FlashcardsScreen() {
       speakWord(currentWord.word, child?.voicePreference);
     }
   }, [currentWord, showFeedback, isComplete]);
-  
+
   // Check speech recognition availability
   useEffect(() => {
     if (isSpeechRecognitionSupported()) {
@@ -123,6 +123,40 @@ export default function FlashcardsScreen() {
       });
     }
   }, []);
+
+  // Auto-start listening as soon as a new word displays — no tap needed.
+  // Wait a beat after the TTS so we don't capture our own voice.
+  useEffect(() => {
+    if (!speechAvailable || !currentWord || showFeedback || isComplete || isPaused) return;
+    if (isListening) return;
+    const t = setTimeout(() => {
+      if (showFeedback || isComplete || isPaused) return;
+      setIsListening(true);
+      setTranscript('');
+      listenerRef.current = startListening(
+        currentWord.word,
+        (result) => {
+          setTranscript(result.transcript);
+          listenerRef.current?.stop();
+          listenerRef.current = null;
+          setIsListening(false);
+          handleAnswer(true);
+        },
+        (result) => {
+          setTranscript(result.transcript);
+        },
+        () => {
+          setIsListening(false);
+          listenerRef.current = null;
+        },
+        () => {
+          setIsListening(false);
+          listenerRef.current = null;
+        },
+      );
+    }, 700);
+    return () => clearTimeout(t);
+  }, [currentWord?.id, showFeedback, isComplete, isPaused, speechAvailable]);
 
   // Stop listening when word changes or feedback shown
   useEffect(() => {
@@ -447,34 +481,29 @@ export default function FlashcardsScreen() {
         </View>
       )}
       
-      {/* Mic Button */}
+      {/* Listening indicator (auto, no tap) */}
       {speechAvailable && (
         <View style={styles.micContainer}>
-          <TouchableOpacity
+          <View
             style={[
               styles.micButton,
               {
-                backgroundColor: isListening ? '#ef4444' : colors.primary,
-              }
+                backgroundColor: isListening ? colors.primary : colors.surfaceVariant,
+                opacity: isListening ? 1 : 0.5,
+              },
             ]}
-            onPress={toggleListening}
-            disabled={showFeedback !== null}
           >
-            <Ionicons
-              name={isListening ? 'mic' : 'mic-outline'}
-              size={32}
-              color="white"
-            />
-          </TouchableOpacity>
+            <Ionicons name="mic" size={28} color={isListening ? 'white' : colors.onSurfaceVariant} />
+          </View>
           <Text style={[styles.micLabel, { color: colors.onSurfaceVariant }]}>
-            {isListening ? (transcript || 'Listening...') : 'Tap to speak'}
+            {isListening ? (transcript || 'Listening…') : 'Get ready'}
           </Text>
         </View>
       )}
 
       {/* Instructions */}
       <Text style={[styles.instructions, { color: colors.onSurfaceVariant }]}>
-        {speechAvailable ? 'Speak the word or tap a button' : 'Tap a button below'}
+        {speechAvailable ? 'Say the word out loud' : 'Tap a button below'}
       </Text>
 
       {/* Action Buttons */}

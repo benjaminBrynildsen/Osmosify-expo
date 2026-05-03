@@ -12,7 +12,12 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useChildren } from '../../../contexts/ChildrenContext';
 import { COLORS, useTheme } from '../../../contexts/ThemeContext';
 import { getTheme, GameTheme } from '../../../lib/themes';
-import { speakWord } from '../../../lib/speech';
+import {
+  speakWord,
+  startContinuousListening,
+  isSpeechRecognitionSupported,
+  requestSpeechPermission,
+} from '../../../lib/speech';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -62,6 +67,15 @@ export default function LavaLettersScreen() {
   
   const animationRef = useRef<number>();
   const creatureIdRef = useRef(0);
+  const listenerRef = useRef<{ stop: () => void; updateTargetWords: (w: string[]) => void } | null>(null);
+  const creaturesRef = useRef<Creature[]>([]);
+  const handleSaveCreatureRef = useRef<(c: Creature) => void>(() => {});
+
+  // Track the latest creatures + save handler so the listener callback
+  // can reach them without recreating the listener on every state change
+  useEffect(() => {
+    creaturesRef.current = creatures;
+  }, [creatures]);
   
   const playableWords = useMemo(() => {
     return childWords
@@ -123,10 +137,10 @@ export default function LavaLettersScreen() {
     
     setWordProgress(wp => {
       const newProgress = new Map(wp);
-      const current = newProgress.get(creature.word) || { 
-        word: creature.word, 
-        correctSaves: 0, 
-        cleared: false 
+      const current = newProgress.get(creature.word) || {
+        word: creature.word,
+        correctSaves: 0,
+        cleared: false
       };
       const newSaves = current.correctSaves + 1;
       const cleared = newSaves >= masteryThreshold;
@@ -134,6 +148,53 @@ export default function LavaLettersScreen() {
       return newProgress;
     });
   }, [masteryThreshold]);
+
+  // Keep a ref to the latest save handler so the speech listener can
+  // call it without being torn down on every state change.
+  useEffect(() => {
+    handleSaveCreatureRef.current = handleSaveCreature;
+  }, [handleSaveCreature]);
+
+  // Continuous speech listener — when the kid says a creature's word,
+  // save that creature. Replaces the tap-to-save mechanic.
+  useEffect(() => {
+    if (gameState !== 'playing') {
+      listenerRef.current?.stop();
+      listenerRef.current = null;
+      return;
+    }
+    if (!isSpeechRecognitionSupported()) return;
+    let cancelled = false;
+    requestSpeechPermission().then((granted) => {
+      if (!granted || cancelled) return;
+      const onScreenWords = creaturesRef.current.filter((c) => !c.saved).map((c) => c.word);
+      listenerRef.current = startContinuousListening(
+        onScreenWords,
+        (match) => {
+          // Find the lowest creature with this word (closest to lava)
+          const candidates = creaturesRef.current
+            .filter((c) => !c.saved && c.word.toLowerCase() === match.word.toLowerCase())
+            .sort((a, b) => b.y - a.y);
+          if (candidates[0]) handleSaveCreatureRef.current(candidates[0]);
+        },
+        () => {},
+        () => {},
+        () => {},
+      );
+    });
+    return () => {
+      cancelled = true;
+      listenerRef.current?.stop();
+      listenerRef.current = null;
+    };
+  }, [gameState]);
+
+  // Update the listener's target list as creatures spawn / get saved
+  useEffect(() => {
+    if (!listenerRef.current) return;
+    const onScreenWords = creatures.filter((c) => !c.saved).map((c) => c.word);
+    listenerRef.current.updateTargetWords(onScreenWords);
+  }, [creatures]);
   
   const startGame = useCallback(() => {
     setGameState('playing');
@@ -287,7 +348,7 @@ export default function LavaLettersScreen() {
               {gameTheme.name} Letters
             </Text>
             <Text style={[styles.readyDescription, { color: gameTheme.textColor, opacity: 0.7 }]}>
-              Tap the creatures to save them before they fall into the lava!
+              Say each word out loud to save the creature before it falls into the lava!
             </Text>
             
             <View style={styles.wordList}>
@@ -357,9 +418,9 @@ export default function LavaLettersScreen() {
           </View>
         )}
         
-        {/* Creatures */}
+        {/* Creatures — saved by speaking the word, not tapping */}
         {gameState === 'playing' && creatures.map(creature => (
-          <TouchableOpacity
+          <View
             key={creature.id}
             style={[
               styles.creature,
@@ -371,19 +432,17 @@ export default function LavaLettersScreen() {
                 transform: [{ scale: creature.saved ? 1.2 : 1 }],
               }
             ]}
-            onPress={() => handleSaveCreature(creature)}
-            activeOpacity={0.7}
           >
             <Text style={styles.creatureText}>{creature.word}</Text>
             {creature.saved && (
-              <Ionicons 
-                name="star" 
-                size={20} 
-                color="#fef08a" 
+              <Ionicons
+                name="star"
+                size={20}
+                color="#fef08a"
                 style={styles.savedStar}
               />
             )}
-          </TouchableOpacity>
+          </View>
         ))}
         
         {/* Lava Zone */}

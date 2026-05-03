@@ -1,4 +1,5 @@
 import * as Speech from 'expo-speech';
+import { Platform } from 'react-native';
 
 // Dynamic import for speech recognition - may not be available in Expo Go
 let ExpoSpeechRecognition: any = null;
@@ -15,9 +16,54 @@ try {
 export type VoiceOption = 'alloy' | 'nova' | 'shimmer';
 
 let isSpeaking = false;
+let cachedVoiceId: string | null | undefined = undefined; // undefined = not queried yet
+
+/**
+ * Pick the best-sounding voice on the device, once per app launch.
+ * iOS: prefers premium > enhanced > Siri voices over the robotic compact default.
+ * Android: prefers Enhanced quality voices.
+ * Picks female en-US voices that read warmly for kids (Samantha, Zoe, Karen).
+ */
+async function pickBestVoiceId(): Promise<string | null> {
+  if (cachedVoiceId !== undefined) return cachedVoiceId;
+  try {
+    const voices = await Speech.getAvailableVoicesAsync();
+    if (!voices?.length) {
+      cachedVoiceId = null;
+      return null;
+    }
+    const preferredNames = ['Samantha', 'Zoe', 'Ava', 'Allison', 'Susan', 'Karen', 'Moira'];
+    const score = (v: Speech.Voice): number => {
+      let s = 0;
+      const id = (v.identifier || '').toLowerCase();
+      const name = (v.name || '').toLowerCase();
+      if (Platform.OS === 'ios') {
+        if (id.includes('premium')) s += 100;
+        if (id.includes('siri')) s += 90;
+        if (id.includes('enhanced')) s += 70;
+      } else if (Platform.OS === 'android') {
+        if ((v as any).quality === Speech.VoiceQuality.Enhanced) s += 80;
+      }
+      const lang = (v.language || '').toLowerCase();
+      if (lang.startsWith('en-us')) s += 40;
+      else if (lang.startsWith('en')) s += 20;
+      const idx = preferredNames.findIndex((n) => name.includes(n.toLowerCase()));
+      if (idx >= 0) s += 30 - idx;
+      return s;
+    };
+    const englishOnly = voices.filter((v) => (v.language || '').toLowerCase().startsWith('en'));
+    const sorted = (englishOnly.length ? englishOnly : voices).slice().sort((a, b) => score(b) - score(a));
+    cachedVoiceId = sorted[0]?.identifier || null;
+    return cachedVoiceId;
+  } catch {
+    cachedVoiceId = null;
+    return null;
+  }
+}
 
 export async function speak(text: string, options?: { rate?: number; onEnd?: () => void }): Promise<void> {
   const rate = options?.rate ?? 0.85;
+  const voiceId = await pickBestVoiceId();
 
   if (isSpeaking) {
     await Speech.stop();
@@ -28,7 +74,8 @@ export async function speak(text: string, options?: { rate?: number; onEnd?: () 
     isSpeaking = true;
     Speech.speak(text, {
       rate,
-      pitch: 1.0,
+      pitch: 1.05,
+      voice: voiceId || undefined,
       onDone: () => {
         isSpeaking = false;
         options?.onEnd?.();
