@@ -1,600 +1,481 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useChildren } from '../../../contexts/ChildrenContext';
-import { COLORS, useTheme } from '../../../contexts/ThemeContext';
-import { Ionicons } from '@expo/vector-icons';
-import type { Word } from '../../../types';
+import { palette, fonts, radius, shadow } from '../../../lib/tokens';
+import { Button } from '../../../components/ui/Button';
 
-interface StatBlockProps {
+interface StatTileProps {
   value: string | number;
   label: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  emoji?: string;
+  color?: 'navy' | 'gold' | 'coral';
 }
 
-function StatBlock({ value, label, icon }: StatBlockProps) {
-  const { theme } = useTheme();
-  const colors = COLORS[theme];
-  
+function StatTile({ value, label, emoji, color = 'navy' }: StatTileProps) {
+  const numberColor =
+    color === 'gold' ? palette.gold : color === 'coral' ? palette.coral : palette.navy;
   return (
-    <View style={[styles.statBlock, { backgroundColor: colors.surface }]}>
-      <Ionicons name={icon} size={20} color={colors.primary} style={styles.statIcon} />
-      <Text style={[styles.statValue, { color: colors.onSurface }]}>{value}</Text>
-      <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>{label}</Text>
+    <View style={styles.statTile}>
+      {emoji && <Text style={styles.statEmoji}>{emoji}</Text>}
+      <Text style={[styles.statNumber, { color: numberColor }]}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
 
-interface ActionButtonProps {
+interface ActivityTileProps {
   title: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  subtitle: string;
+  icon: string;
+  variant: 'featured' | 'coral' | 'gold' | 'sage' | 'sky';
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'accent1' | 'accent2';
   disabled?: boolean;
-  badge?: string;
 }
 
-function ActionButton({ title, icon, onPress, variant = 'secondary', disabled, badge }: ActionButtonProps) {
-  const { theme } = useTheme();
-  const colors = COLORS[theme];
-  
-  const getBackgroundColor = () => {
-    switch (variant) {
-      case 'primary':
-        return colors.primary;
-      case 'accent1':
-        return theme === 'dark' ? 'rgba(147, 51, 234, 0.2)' : 'rgba(147, 51, 234, 0.1)';
-      case 'accent2':
-        return theme === 'dark' ? 'rgba(244, 63, 94, 0.2)' : 'rgba(244, 63, 94, 0.1)';
-      default:
-        return colors.surface;
-    }
-  };
-  
-  const getTextColor = () => {
-    switch (variant) {
-      case 'primary':
-        return colors.onPrimary;
-      case 'accent1':
-        return '#9333ea';
-      case 'accent2':
-        return '#e11d48';
-      default:
-        return colors.onSurface;
-    }
-  };
+function ActivityTile({
+  title,
+  subtitle,
+  icon,
+  variant,
+  onPress,
+  disabled,
+}: ActivityTileProps) {
+  if (variant === 'featured') {
+    return (
+      <Pressable
+        onPress={onPress}
+        disabled={disabled}
+        style={({ pressed }) => [
+          styles.tile,
+          styles.featuredTile,
+          pressed && { transform: [{ scale: 0.99 }] },
+          disabled && { opacity: 0.5 },
+        ]}
+      >
+        <Text style={styles.featuredSparkle}>✦</Text>
+        <Text style={styles.featuredIcon}>{icon}</Text>
+        <Text style={styles.featuredTitle}>{title}</Text>
+        <Text style={styles.featuredSubtitle}>{subtitle}</Text>
+      </Pressable>
+    );
+  }
 
-  const getIconColor = () => {
-    switch (variant) {
-      case 'primary':
-        return colors.onPrimary;
-      case 'accent1':
-        return '#9333ea';
-      case 'accent2':
-        return '#e11d48';
-      default:
-        return colors.primary;
-    }
-  };
-  
+  const bg =
+    variant === 'coral'
+      ? palette.coralPale
+      : variant === 'gold'
+      ? palette.goldPale
+      : variant === 'sage'
+      ? palette.sagePale
+      : palette.skyPale;
+
   return (
-    <TouchableOpacity
-      style={[
-        styles.actionButton,
-        { 
-          backgroundColor: getBackgroundColor(),
-          opacity: disabled ? 0.5 : 1,
-        }
-      ]}
+    <Pressable
       onPress={onPress}
       disabled={disabled}
+      style={({ pressed }) => [
+        styles.tile,
+        pressed && { transform: [{ scale: 0.99 }] },
+        disabled && { opacity: 0.5 },
+      ]}
     >
-      {badge && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{badge}</Text>
-        </View>
-      )}
-      <Ionicons name={icon} size={24} color={getIconColor()} />
-      <Text style={[styles.actionButtonText, { color: getTextColor() }]}>{title}</Text>
-    </TouchableOpacity>
+      <View style={[styles.tileIconCircle, { backgroundColor: bg }]}>
+        <Text style={styles.tileIcon}>{icon}</Text>
+      </View>
+      <Text style={styles.tileTitle}>{title}</Text>
+      <Text style={styles.tileSubtitle}>{subtitle}</Text>
+    </Pressable>
   );
 }
 
 export default function ChildDashboardScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { children, words, sessions, loading, selectChild } = useChildren();
-  const { theme } = useTheme();
-  const colors = COLORS[theme];
-  
-  const child = children.find(c => c.id === id);
-  
-  const childWords = useMemo(() => 
-    words.filter(w => w.childId === id),
-    [words, id]
+
+  const child = children.find((c) => c.id === id);
+  const childWords = useMemo(() => words.filter((w) => w.childId === id), [words, id]);
+  const childSessions = useMemo(
+    () =>
+      sessions
+        .filter((s) => s.childId === id)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [sessions, id],
   );
-  
-  const childSessions = useMemo(() => 
-    sessions.filter(s => s.childId === id).sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    ),
-    [sessions, id]
-  );
-  
-  const newWords = childWords.filter(w => w.status === 'new');
-  const learningWords = childWords.filter(w => w.status === 'learning');
-  const masteredWords = childWords.filter(w => w.status === 'mastered');
-  
+
+  const newWords = childWords.filter((w) => w.status === 'new');
+  const learningWords = childWords.filter((w) => w.status === 'learning');
+  const masteredWords = childWords.filter((w) => w.status === 'mastered');
   const lastSession = childSessions[0];
-  
+
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator size="large" color={palette.navy} />
         </View>
       </SafeAreaView>
     );
   }
-  
+
   if (!child) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.errorContainer}>
-          <Text style={[styles.errorText, { color: colors.onSurface }]}>Child not found</Text>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={{ color: colors.primary }}>Go Back</Text>
-          </TouchableOpacity>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingWrap}>
+          <Text style={styles.errorText}>Reader not found</Text>
+          <Pressable onPress={() => router.back()}>
+            <Text style={{ color: palette.gold, fontFamily: fonts.bodyBold }}>Go back</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
   }
-  
+
   selectChild(child);
-  
+
+  // Surface a couple of derived numbers for the stats row
+  const streak = lastSession ? 1 : 0; // TODO: real streak when sessions tracked
+  const booksCount = new Set(
+    childSessions.map((s) => s.bookTitle).filter(Boolean),
+  ).size;
+
+  const todaysWordsLabel =
+    newWords.length > 0
+      ? `${Math.min(5, newWords.length)} new words`
+      : learningWords.length > 0
+      ? 'Practice the learning words'
+      : 'All caught up — scan a new page';
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.onSurface} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.onSurface }]}>{child.name}</Text>
-        <TouchableOpacity 
-          style={styles.settingsButton}
-          onPress={() => router.push(`/child/${id}/settings`)}
-        >
-          <Ionicons name="settings-outline" size={24} color={colors.onSurface} />
-        </TouchableOpacity>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Topbar */}
+      <View style={styles.topbar}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backChevron}>‹</Text>
+        </Pressable>
+        <Text style={styles.topbarTitle}>{child.name}</Text>
+        <View style={styles.topbarRight} />
       </View>
-      
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          <StatBlock value={childWords.length} label="Words" icon="book-outline" />
-          <StatBlock value={masteredWords.length} label="Mastered" icon="trophy-outline" />
-          <StatBlock value={child.gradeLevel || 'Pre-K'} label="Grade" icon="school-outline" />
-          <StatBlock value={child.sentencesRead} label="Sentences" icon="chatbubble-outline" />
+
+      <ScrollView contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
+        {/* Stats */}
+        <View style={styles.statsRow}>
+          <StatTile value={childWords.length} label="Words" emoji="📖" />
+          <StatTile value={streak} label="Day streak" emoji="🔥" color="coral" />
+          <StatTile value={booksCount} label="Books" emoji="⭐" color="gold" />
         </View>
-        
-        {/* Jump Back In */}
-        {lastSession && (
-          <TouchableOpacity 
-            style={[styles.jumpBackCard, { backgroundColor: colors.primaryContainer }]}
+
+        {/* Today's adventure */}
+        <Text style={styles.sectionH}>Today's adventure</Text>
+        <ActivityTile
+          variant="featured"
+          icon="✨"
+          title={
+            newWords.length > 0
+              ? `${Math.min(5, newWords.length)} new words`
+              : 'Keep learning'
+          }
+          subtitle={
+            lastSession?.bookTitle
+              ? `From ${lastSession.bookTitle}`
+              : 'Tap to start'
+          }
+          onPress={() => router.push(`/child/${id}/flashcards`)}
+        />
+
+        <View style={styles.tileGrid}>
+          <ActivityTile
+            variant="coral"
+            icon="📇"
+            title="Flashcards"
+            subtitle="Mastery"
+            onPress={() => router.push(`/child/${id}/flashcards`)}
+            disabled={newWords.length + learningWords.length === 0}
+          />
+          <ActivityTile
+            variant="gold"
+            icon="🎯"
+            title="Word Pop"
+            subtitle="Find the word"
             onPress={() => router.push(`/child/${id}/word-pop`)}
-          >
-            <View style={styles.jumpBackIcon}>
-              <Ionicons name="play" size={20} color={colors.onPrimary} />
-            </View>
-            <View style={styles.jumpBackContent}>
-              <Text style={[styles.jumpBackLabel, { color: colors.primary }]}>Jump Back In</Text>
-              <Text style={[styles.jumpBackTitle, { color: colors.onSurface }]}>
-                {lastSession.bookTitle || 'Continue Reading'}
-              </Text>
-              <Text style={[styles.jumpBackSubtitle, { color: colors.onSurfaceVariant }]}>
-                Continue where you left off
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-        )}
-        
-        {/* Action Buttons Grid */}
-        <View style={styles.actionsGrid}>
-          <View style={styles.actionRow}>
-            <ActionButton
-              title="Flashcards"
-              icon="sparkles"
-              onPress={() => router.push(`/child/${id}/flashcards`)}
-              variant="secondary"
-              disabled={newWords.length + learningWords.length === 0}
-            />
-            <ActionButton
-              title="Books"
-              icon="library"
-              onPress={() => router.push(`/child/${id}/books`)}
-              variant="secondary"
-            />
-          </View>
-          
-          <View style={styles.actionRow}>
-            <ActionButton
-              title="Word Pop"
-              icon="game-controller"
-              onPress={() => router.push(`/child/${id}/word-pop`)}
-              variant="accent1"
-              disabled={childWords.length < 4}
-            />
-            <ActionButton
-              title="My Library"
-              icon="heart"
-              onPress={() => router.push(`/child/${id}/library`)}
-              variant="accent2"
-            />
-          </View>
-          
-          <View style={styles.actionRow}>
-            <ActionButton
-              title="Upload"
-              icon="camera"
-              onPress={() => router.push(`/child/${id}/upload`)}
-              variant="primary"
-            />
-            <ActionButton
-              title="Word Lists"
-              icon="list"
-              onPress={() => router.push(`/child/${id}/library`)}
-              variant="secondary"
-            />
-          </View>
-          
-          <View style={styles.actionRow}>
-            <ActionButton
-              title="Lava Letters"
-              icon="flame"
-              onPress={() => router.push(`/child/${id}/lava-letters`)}
-              variant="accent2"
-              disabled={childWords.length < 2}
-              badge="NEW"
-            />
-            <ActionButton
-              title="Review"
-              icon="refresh"
-              onPress={() => router.push(`/child/${id}/flashcards`)}
-              variant="secondary"
-              disabled={masteredWords.length + learningWords.length === 0}
-            />
-          </View>
+            disabled={childWords.length < 4}
+          />
+          <ActivityTile
+            variant="sage"
+            icon="📖"
+            title="Library"
+            subtitle={`${childWords.length} words`}
+            onPress={() => router.push(`/child/${id}/library`)}
+          />
+          <ActivityTile
+            variant="sky"
+            icon="📷"
+            title="Add page"
+            subtitle="Scan a book"
+            onPress={() => router.push(`/child/${id}/upload`)}
+          />
         </View>
-        
-        {/* Words Ready to Unlock */}
+
+        {/* Words ready to unlock */}
         {newWords.length > 0 && (
-          <View style={[styles.wordsCard, { backgroundColor: colors.surface }]}>
-            <View style={styles.wordsCardHeader}>
-              <Ionicons name="sparkles" size={16} color={colors.primary} />
-              <Text style={[styles.wordsCardTitle, { color: colors.onSurface }]}>
-                Words Ready to Unlock
-              </Text>
-            </View>
-            <View style={styles.wordsList}>
-              {newWords.slice(0, 10).map((word) => (
-                <View 
-                  key={word.id}
-                  style={[styles.wordChip, { backgroundColor: colors.primaryContainer }]}
-                >
-                  <Text style={[styles.wordChipText, { color: colors.primary }]}>
-                    {word.word}
-                  </Text>
+          <View style={styles.unlockCard}>
+            <Text style={styles.sectionH}>Ready to unlock</Text>
+            <View style={styles.chipRow}>
+              {newWords.slice(0, 8).map((w) => (
+                <View key={w.id} style={styles.chip}>
+                  <Text style={styles.chipText}>{w.word}</Text>
                 </View>
               ))}
-              {newWords.length > 10 && (
-                <Text style={[styles.moreWords, { color: colors.onSurfaceVariant }]}>
-                  +{newWords.length - 10} more
-                </Text>
+              {newWords.length > 8 && (
+                <Text style={styles.chipMore}>+{newWords.length - 8}</Text>
               )}
             </View>
-            <TouchableOpacity 
-              style={styles.practiceButton}
-              onPress={() => router.push(`/child/${id}/flashcards`)}
-            >
-              <Ionicons name="trending-up" size={14} color={colors.primary} />
-              <Text style={[styles.practiceButtonText, { color: colors.primary }]}>
-                Start unlocking these words
-              </Text>
-            </TouchableOpacity>
+            <View style={{ marginTop: 12 }}>
+              <Button
+                onPress={() => router.push(`/child/${id}/flashcards`)}
+                variant="gold"
+              >
+                Start unlocking
+              </Button>
+            </View>
           </View>
         )}
-        
-        {/* Recent Sessions */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Recent Sessions</Text>
-            {childSessions.length > 5 && (
-              <TouchableOpacity>
-                <Text style={[styles.viewAll, { color: colors.primary }]}>View all</Text>
-              </TouchableOpacity>
-            )}
+
+        {/* Recent sessions */}
+        {childSessions.length > 0 && (
+          <View style={{ marginTop: 8 }}>
+            <Text style={styles.sectionH}>Recent reading</Text>
+            {childSessions.slice(0, 5).map((s) => (
+              <View key={s.id} style={styles.sessionRow}>
+                <View style={styles.sessionIcon}>
+                  <Text style={{ fontSize: 18 }}>📖</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.sessionTitle}>
+                    {s.bookTitle || 'Reading session'}
+                  </Text>
+                  <Text style={styles.sessionMeta}>
+                    {s.newWordsCount} new words ·{' '}
+                    {new Date(s.createdAt).toLocaleDateString()}
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
-          
-          {childSessions.slice(0, 5).map((session) => (
-            <View 
-              key={session.id}
-              style={[styles.sessionCard, { backgroundColor: colors.surface }]}
-            >
-              <View style={styles.sessionIcon}>
-                <Ionicons name="book" size={20} color={colors.primary} />
-              </View>
-              <View style={styles.sessionContent}>
-                <Text style={[styles.sessionTitle, { color: colors.onSurface }]}>
-                  {session.bookTitle || 'Reading Session'}
-                </Text>
-                <Text style={[styles.sessionSubtitle, { color: colors.onSurfaceVariant }]}>
-                  {session.newWordsCount} new words • {new Date(session.createdAt).toLocaleDateString()}
-                </Text>
-              </View>
-            </View>
-          ))}
-          
-          {childSessions.length === 0 && (
-            <View style={[styles.emptyCard, { backgroundColor: colors.surface }]}>
-              <Ionicons name="book-outline" size={32} color={colors.onSurfaceVariant} />
-              <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>No sessions yet</Text>
-              <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
-                Upload pages from a book to start tracking vocabulary.
-              </Text>
-            </View>
-          )}
-        </View>
-        
-        <View style={styles.bottomPadding} />
+        )}
+
+        <View style={{ height: 24 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 16,
-  },
+  container: { flex: 1, backgroundColor: palette.cream },
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   errorText: {
+    fontFamily: fonts.contentSerifBold,
     fontSize: 18,
+    color: palette.navy,
   },
-  header: {
+
+  topbar: {
+    backgroundColor: palette.paper,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    paddingTop: 8,
-  },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  settingsButton: {
-    padding: 8,
-    marginRight: -8,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     paddingHorizontal: 16,
+    paddingVertical: 14,
     gap: 12,
+    shadowColor: palette.navy,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
-  statBlock: {
-    flex: 1,
-    minWidth: '22%',
-    padding: 12,
-    borderRadius: 12,
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    backgroundColor: palette.cream,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  statIcon: {
-    marginBottom: 4,
+  backChevron: {
+    fontSize: 26,
+    color: palette.navy,
+    fontFamily: fonts.bodyBold,
+    marginTop: -3,
   },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700',
+  topbarTitle: {
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 19,
+    color: palette.navy,
+    letterSpacing: -0.2,
+    flex: 1,
+  },
+  topbarRight: { width: 36 },
+
+  scrollBody: { padding: 18, paddingTop: 12 },
+
+  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 4 },
+  statTile: {
+    flex: 1,
+    backgroundColor: palette.paper,
+    borderRadius: radius.lg,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    position: 'relative',
+    ...shadow.card,
+  },
+  statEmoji: { position: 'absolute', top: 6, right: 8, fontSize: 14, opacity: 0.6 },
+  statNumber: {
+    fontFamily: fonts.contentSerifBold,
+    fontSize: 28,
+    letterSpacing: -0.3,
   },
   statLabel: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  jumpBackCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    margin: 16,
-    padding: 16,
-    borderRadius: 16,
-  },
-  jumpBackIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  jumpBackContent: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  jumpBackLabel: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fonts.bodyBold,
+    fontSize: 10,
+    color: palette.slate,
+    marginTop: 4,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 2,
+    letterSpacing: 0.6,
   },
-  jumpBackTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+
+  sectionH: {
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 11,
+    color: palette.gold,
+    textTransform: 'uppercase',
+    letterSpacing: 1.8,
+    marginTop: 18,
+    marginBottom: 10,
+    marginLeft: 4,
   },
-  jumpBackSubtitle: {
-    fontSize: 13,
+
+  tile: {
+    backgroundColor: palette.paper,
+    borderRadius: radius.xl,
+    padding: 14,
+    minHeight: 96,
+    ...shadow.card,
+  },
+  featuredTile: {
+    width: '100%',
+    minHeight: 110,
+    backgroundColor: palette.navy,
+    overflow: 'hidden',
+    paddingVertical: 18,
+  },
+  featuredSparkle: {
+    position: 'absolute',
+    top: 14,
+    right: 18,
+    color: palette.gold,
+    fontSize: 22,
+  },
+  featuredIcon: { fontSize: 30, marginBottom: 4 },
+  featuredTitle: {
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 19,
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
+  },
+  featuredSubtitle: {
+    fontFamily: fonts.hand,
+    fontSize: 18,
+    color: palette.goldPale,
     marginTop: 2,
   },
-  actionsGrid: {
-    paddingHorizontal: 16,
-    gap: 10,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  actionButton: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    position: 'relative',
-  },
-  actionButtonText: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginTop: 6,
-  },
-  badge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: '#22c55e',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  badgeText: {
-    color: 'white',
-    fontSize: 9,
-    fontWeight: '700',
-  },
-  wordsCard: {
-    margin: 16,
-    padding: 16,
-    borderRadius: 16,
-  },
-  wordsCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  wordsCardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  wordsList: {
+
+  tileGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
+    marginTop: 10,
   },
-  wordChip: {
+  tileIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  tileIcon: { fontSize: 20 },
+  tileTitle: {
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 15,
+    color: palette.navy,
+    letterSpacing: -0.2,
+  },
+  tileSubtitle: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 11,
+    color: palette.slate,
+    marginTop: 2,
+  },
+
+  unlockCard: { marginTop: 4 },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  chip: {
+    backgroundColor: palette.lavenderPale,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: radius.md,
   },
-  wordChipText: {
+  chipText: {
+    fontFamily: fonts.contentSerifSemi,
     fontSize: 14,
-    fontWeight: '500',
+    color: '#6E5FA8',
   },
-  moreWords: {
-    fontSize: 13,
-    paddingVertical: 6,
+  chipMore: {
+    fontFamily: fonts.bodyBold,
+    fontSize: 12,
+    color: palette.slate,
+    paddingVertical: 8,
   },
-  practiceButton: {
+
+  sessionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 12,
-  },
-  practiceButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  section: {
-    marginTop: 24,
-    paddingHorizontal: 16,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  viewAll: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  sessionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    backgroundColor: palette.paper,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: radius.lg,
     marginBottom: 8,
+    gap: 12,
+    ...shadow.card,
   },
   sessionIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(124, 58, 237, 0.1)',
-    justifyContent: 'center',
+    borderRadius: radius.md,
+    backgroundColor: palette.warmCream,
     alignItems: 'center',
-  },
-  sessionContent: {
-    flex: 1,
-    marginLeft: 12,
+    justifyContent: 'center',
   },
   sessionTitle: {
+    fontFamily: fonts.bodyBold,
     fontSize: 15,
-    fontWeight: '500',
+    color: palette.navy,
   },
-  sessionSubtitle: {
-    fontSize: 13,
+  sessionMeta: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 12,
+    color: palette.slate,
     marginTop: 2,
-  },
-  emptyCard: {
-    padding: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 12,
-  },
-  emptyText: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  bottomPadding: {
-    height: 32,
   },
 });

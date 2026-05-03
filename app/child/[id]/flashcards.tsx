@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useChildren } from '../../../contexts/ChildrenContext';
 import { COLORS, useTheme } from '../../../contexts/ThemeContext';
+import { fonts } from '../../../lib/tokens';
 import {
   speakWord,
   cancelSpeech,
@@ -588,14 +589,15 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   wordText: {
-    fontSize: 48,
-    fontWeight: '700',
+    fontFamily: fonts.contentSerifBold,
+    fontSize: 56,
+    letterSpacing: -1,
   },
   tryAgainText: {
     position: 'absolute',
     top: 20,
+    fontFamily: fonts.bodyExtraBold,
     fontSize: 18,
-    fontWeight: '600',
     color: '#ffffff',
   },
   dotsContainer: {
@@ -678,8 +680,9 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   actionButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 15,
+    letterSpacing: 0.2,
   },
   emptyContainer: {
     flex: 1,
