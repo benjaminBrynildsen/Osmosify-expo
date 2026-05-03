@@ -19,6 +19,9 @@ import {
   requestSpeechPermission,
 } from '../../../lib/speech';
 import { Ionicons } from '@expo/vector-icons';
+import { AnimatedLava } from '../../../components/lava/AnimatedLava';
+import { Embers } from '../../../components/lava/Embers';
+import { Creature as AnimatedCreature } from '../../../components/lava/Creature';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const GAME_HEIGHT = SCREEN_HEIGHT - 220;
@@ -155,37 +158,48 @@ export default function LavaLettersScreen() {
     handleSaveCreatureRef.current = handleSaveCreature;
   }, [handleSaveCreature]);
 
+  const [speechReady, setSpeechReady] = useState(false);
+
   // Continuous speech listener — when the kid says a creature's word,
-  // save that creature. Replaces the tap-to-save mechanic.
+  // save that creature. Replaces the tap-to-save mechanic. If speech
+  // recognition is unavailable, fall back to tap-to-save below.
   useEffect(() => {
     if (gameState !== 'playing') {
       listenerRef.current?.stop();
       listenerRef.current = null;
+      setSpeechReady(false);
       return;
     }
-    if (!isSpeechRecognitionSupported()) return;
+    if (!isSpeechRecognitionSupported()) {
+      console.log('[lava] speech recognition NOT supported — tap fallback enabled');
+      return;
+    }
     let cancelled = false;
     requestSpeechPermission().then((granted) => {
+      console.log('[lava] mic permission granted:', granted);
       if (!granted || cancelled) return;
       const onScreenWords = creaturesRef.current.filter((c) => !c.saved).map((c) => c.word);
+      console.log('[lava] starting continuous listener for', onScreenWords);
       listenerRef.current = startContinuousListening(
         onScreenWords,
         (match) => {
-          // Find the lowest creature with this word (closest to lava)
+          console.log('[lava] match!', match.word, match.transcript);
           const candidates = creaturesRef.current
             .filter((c) => !c.saved && c.word.toLowerCase() === match.word.toLowerCase())
             .sort((a, b) => b.y - a.y);
           if (candidates[0]) handleSaveCreatureRef.current(candidates[0]);
         },
         () => {},
-        () => {},
+        (err) => console.warn('[lava] listener error:', err),
         () => {},
       );
+      setSpeechReady(true);
     });
     return () => {
       cancelled = true;
       listenerRef.current?.stop();
       listenerRef.current = null;
+      setSpeechReady(false);
     };
   }, [gameState]);
 
@@ -419,37 +433,33 @@ export default function LavaLettersScreen() {
         )}
         
         {/* Creatures — saved by speaking the word, not tapping */}
-        {gameState === 'playing' && creatures.map(creature => (
-          <View
-            key={creature.id}
-            style={[
-              styles.creature,
-              {
-                left: creature.x,
-                top: creature.y,
-                backgroundColor: creature.saved ? gameTheme.creatureSavedColor : gameTheme.creatureGradient,
-                opacity: creature.saved ? 0 : 1,
-                transform: [{ scale: creature.saved ? 1.2 : 1 }],
-              }
-            ]}
-          >
-            <Text style={styles.creatureText}>{creature.word}</Text>
-            {creature.saved && (
-              <Ionicons
-                name="star"
-                size={20}
-                color="#fef08a"
-                style={styles.savedStar}
+        {gameState === 'playing' && creatures.map(creature => {
+          const size = 80 + creature.word.length * 4;
+          const inDanger = !creature.saved && creature.y > GAME_HEIGHT - 220;
+          return (
+            <View
+              key={creature.id}
+              style={[styles.creature, { left: creature.x, top: creature.y, width: size, height: size }]}
+              pointerEvents="none"
+            >
+              <AnimatedCreature
+                word={creature.word}
+                saved={creature.saved}
+                size={size}
+                bg={gameTheme.creatureGradient}
+                bgSaved={gameTheme.creatureSavedColor}
+                inDanger={inDanger}
               />
-            )}
-          </View>
-        ))}
-        
-        {/* Lava Zone */}
+            </View>
+          );
+        })}
+
+        {/* Animated Lava Zone */}
         {gameState === 'playing' && (
-          <View style={[styles.lavaZone, { backgroundColor: gameTheme.dangerZoneColor }]}>
-            <View style={styles.lavaWave} />
-          </View>
+          <>
+            <Embers bottomOffset={70} count={8} />
+            <AnimatedLava height={90} />
+          </>
         )}
       </View>
       

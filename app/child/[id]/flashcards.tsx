@@ -120,7 +120,10 @@ export default function FlashcardsScreen() {
     if (isSpeechRecognitionSupported()) {
       requestSpeechPermission().then(granted => {
         setSpeechAvailable(granted);
+        console.log('[flashcards] mic permission granted:', granted);
       });
+    } else {
+      console.log('[flashcards] speech recognition NOT supported on this device');
     }
   }, []);
 
@@ -128,14 +131,20 @@ export default function FlashcardsScreen() {
   // Wait a beat after the TTS so we don't capture our own voice.
   useEffect(() => {
     if (!speechAvailable || !currentWord || showFeedback || isComplete || isPaused) return;
-    if (isListening) return;
+    // Stop any prior listener from a previous word before starting a new one
+    listenerRef.current?.stop();
+    listenerRef.current = null;
+    setIsListening(false);
+
     const t = setTimeout(() => {
       if (showFeedback || isComplete || isPaused) return;
       setIsListening(true);
       setTranscript('');
+      console.log('[flashcards] starting listener for', currentWord.word);
       listenerRef.current = startListening(
         currentWord.word,
         (result) => {
+          console.log('[flashcards] match!', result.transcript);
           setTranscript(result.transcript);
           listenerRef.current?.stop();
           listenerRef.current = null;
@@ -145,7 +154,8 @@ export default function FlashcardsScreen() {
         (result) => {
           setTranscript(result.transcript);
         },
-        () => {
+        (err) => {
+          console.warn('[flashcards] listener error:', err);
           setIsListening(false);
           listenerRef.current = null;
         },
@@ -155,7 +165,11 @@ export default function FlashcardsScreen() {
         },
       );
     }, 700);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      listenerRef.current?.stop();
+      listenerRef.current = null;
+    };
   }, [currentWord?.id, showFeedback, isComplete, isPaused, speechAvailable]);
 
   // Stop listening when word changes or feedback shown
@@ -481,29 +495,64 @@ export default function FlashcardsScreen() {
         </View>
       )}
       
-      {/* Listening indicator (auto, no tap) */}
-      {speechAvailable && (
-        <View style={styles.micContainer}>
-          <View
-            style={[
-              styles.micButton,
-              {
-                backgroundColor: isListening ? colors.primary : colors.surfaceVariant,
-                opacity: isListening ? 1 : 0.5,
-              },
-            ]}
-          >
-            <Ionicons name="mic" size={28} color={isListening ? 'white' : colors.onSurfaceVariant} />
-          </View>
-          <Text style={[styles.micLabel, { color: colors.onSurfaceVariant }]}>
-            {isListening ? (transcript || 'Listening…') : 'Get ready'}
-          </Text>
-        </View>
-      )}
+      {/* Listening indicator — auto-starts; tap to retry permission if needed */}
+      <View style={styles.micContainer}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={async () => {
+            // Tap to manually re-trigger listener (or re-request permission)
+            if (!isSpeechRecognitionSupported()) return;
+            const granted = await requestSpeechPermission();
+            setSpeechAvailable(granted);
+            if (granted && currentWord && !isListening) {
+              setIsListening(true);
+              setTranscript('');
+              listenerRef.current?.stop();
+              listenerRef.current = startListening(
+                currentWord.word,
+                (result) => {
+                  setTranscript(result.transcript);
+                  listenerRef.current?.stop();
+                  listenerRef.current = null;
+                  setIsListening(false);
+                  handleAnswer(true);
+                },
+                (result) => setTranscript(result.transcript),
+                () => { setIsListening(false); listenerRef.current = null; },
+                () => { setIsListening(false); listenerRef.current = null; },
+              );
+            }
+          }}
+          style={[
+            styles.micButton,
+            {
+              backgroundColor: isListening
+                ? colors.primary
+                : speechAvailable
+                ? colors.surfaceVariant
+                : colors.error,
+              opacity: isListening ? 1 : speechAvailable ? 0.6 : 1,
+            },
+          ]}
+        >
+          <Ionicons
+            name="mic"
+            size={28}
+            color={isListening ? 'white' : speechAvailable ? colors.onSurfaceVariant : 'white'}
+          />
+        </TouchableOpacity>
+        <Text style={[styles.micLabel, { color: colors.onSurfaceVariant }]}>
+          {!speechAvailable
+            ? 'Tap to enable mic'
+            : isListening
+            ? transcript || 'Listening…'
+            : 'Get ready'}
+        </Text>
+      </View>
 
       {/* Instructions */}
       <Text style={[styles.instructions, { color: colors.onSurfaceVariant }]}>
-        {speechAvailable ? 'Say the word out loud' : 'Tap a button below'}
+        {speechAvailable ? 'Say the word out loud' : 'Or tap a button below'}
       </Text>
 
       {/* Action Buttons */}
