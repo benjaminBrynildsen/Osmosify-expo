@@ -2,7 +2,7 @@
 # Poll the latest iOS build until it finishes, then submit to TestFlight.
 
 set -u
-BUILD_ID="e54c5d43-3141-4871-8fa6-9111e112227c"
+BUILD_ID="bd659144-8123-40c6-9858-83e2cfd0c87b"
 LOG=/tmp/eas-build-watch.log
 STATE=/tmp/eas-build-watch.state
 

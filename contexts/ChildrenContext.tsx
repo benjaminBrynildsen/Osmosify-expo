@@ -53,6 +53,10 @@ export function ChildrenProvider({ children: reactChildren }: { children: React.
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
+      // Eagerly seed presets on first launch so the library + word lists
+      // are visible immediately.
+      await Promise.all([storage.initializePresets(), storage.getBooks()]);
+
       const [childrenData, wordsData, sessionsData, booksData, progressData] = await Promise.all([
         storage.getChildren(),
         storage.getWords(),

@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.readwithnoah.app",
-      "buildNumber": "1.0.3",
+      "buildNumber": "1.0.4",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Noah uses your camera to photograph book pages so it can pull out the words your child is learning.",
