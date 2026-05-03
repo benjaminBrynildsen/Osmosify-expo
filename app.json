@@ -57,7 +57,8 @@
       },
       "supabaseUrl": "",
       "supabaseAnonKey": "",
-      "aiProxyUrl": ""
+      "aiProxyUrl": "",
+      "aiProxyToken": ""
     },
     "owner": "hansfather"
   }

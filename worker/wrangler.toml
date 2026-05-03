@@ -1,0 +1,6 @@
+name = "noah-ai"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+
+# Set XAI_API_KEY in Cloudflare dashboard (Workers → noah-ai → Settings → Variables → Add encrypted variable)
+# OR via wrangler:  npx wrangler secret put XAI_API_KEY
