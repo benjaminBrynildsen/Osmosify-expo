@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useChildren } from '../../../contexts/ChildrenContext';
 import { COLORS, useTheme } from '../../../contexts/ThemeContext';
+import { fonts } from '../../../lib/tokens';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -386,11 +387,12 @@ const styles = StyleSheet.create({
     marginLeft: -8,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 19,
     flex: 1,
     textAlign: 'center',
     marginRight: 40,
+    letterSpacing: -0.2,
   },
   placeholder: {
     width: 40,
@@ -453,8 +455,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   captureButtonText: {
+    fontFamily: fonts.bodyBold,
     fontSize: 14,
-    fontWeight: '600',
   },
   previewSection: {
     marginTop: 8,
@@ -494,8 +496,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   extractButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 15,
+    letterSpacing: 0.2,
   },
   hintArea: {
     alignItems: 'center',
@@ -546,7 +549,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   saveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 15,
+    letterSpacing: 0.2,
   },
 });

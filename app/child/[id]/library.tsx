@@ -3,174 +3,124 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useChildren } from '../../../contexts/ChildrenContext';
-import { COLORS, useTheme } from '../../../contexts/ThemeContext';
-import { Ionicons } from '@expo/vector-icons';
+import { palette, fonts, radius, shadow } from '../../../lib/tokens';
 import type { Word } from '../../../types';
+
+type Filter = 'all' | 'new' | 'learning' | 'mastered';
+
+const STATUS_LABEL: Record<Word['status'], string> = {
+  new: 'New',
+  learning: 'Learning',
+  mastered: 'Mastered',
+};
+
+const STATUS_BADGE_COLORS: Record<Word['status'], { bg: string; fg: string }> = {
+  new: { bg: palette.lavenderPale, fg: '#6E5FA8' },
+  learning: { bg: palette.goldPale, fg: '#8C6B1B' },
+  mastered: { bg: palette.sagePale, fg: '#2F6B47' },
+};
 
 export default function LibraryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { children, words, getPresets, addWords } = useChildren();
-  const { theme } = useTheme();
-  const colors = COLORS[theme];
-  
-  const child = children.find(c => c.id === id);
-  const childWords = useMemo(() => 
-    words.filter(w => w.childId === id),
-    [words, id]
-  );
-  
-  const [filter, setFilter] = useState<'all' | 'new' | 'learning' | 'mastered'>('all');
-  
+  const { children, words } = useChildren();
+
+  const child = children.find((c) => c.id === id);
+  const childWords = useMemo(() => words.filter((w) => w.childId === id), [words, id]);
+
+  const [filter, setFilter] = useState<Filter>('all');
+
   const filteredWords = useMemo(() => {
-    switch (filter) {
-      case 'new':
-        return childWords.filter(w => w.status === 'new');
-      case 'learning':
-        return childWords.filter(w => w.status === 'learning');
-      case 'mastered':
-        return childWords.filter(w => w.status === 'mastered');
-      default:
-        return childWords;
-    }
+    if (filter === 'all') return childWords;
+    return childWords.filter((w) => w.status === filter);
   }, [childWords, filter]);
-  
-  const stats = useMemo(() => ({
-    total: childWords.length,
-    new: childWords.filter(w => w.status === 'new').length,
-    learning: childWords.filter(w => w.status === 'learning').length,
-    mastered: childWords.filter(w => w.status === 'mastered').length,
-  }), [childWords]);
-  
-  const getStatusColor = (status: Word['status']) => {
-    switch (status) {
-      case 'new':
-        return '#3b82f6';
-      case 'learning':
-        return '#f59e0b';
-      case 'mastered':
-        return '#22c55e';
-    }
-  };
-  
-  const getStatusLabel = (status: Word['status']) => {
-    switch (status) {
-      case 'new':
-        return 'New';
-      case 'learning':
-        return 'Learning';
-      case 'mastered':
-        return 'Mastered';
-    }
-  };
-  
-  const renderWordItem = ({ item }: { item: Word }) => (
-    <View style={[styles.wordCard, { backgroundColor: colors.surface }]}>
-      <View style={styles.wordHeader}>
-        <Text style={[styles.wordText, { color: colors.onSurface }]}>{item.word}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Text style={styles.statusText}>{getStatusLabel(item.status)}</Text>
-        </View>
-      </View>
-      
-      <View style={styles.wordStats}>
-        <Text style={[styles.statText, { color: colors.onSurfaceVariant }]}>
-          Seen {item.sessionsSeenCount} time{item.sessionsSeenCount !== 1 ? 's' : ''}
-        </Text>
-        <Text style={[styles.statText, { color: colors.onSurfaceVariant }]}>
-          {item.masteryCorrectCount} correct
-        </Text>
-      </View>
-      
-      {item.status === 'mastered' && (
-        <View style={styles.masteredIndicator}>
-          <Ionicons name="checkmark-circle" size={16} color="#22c55e" />
-          <Text style={[styles.masteredText, { color: '#22c55e' }]}>Mastered</Text>
-        </View>
-      )}
-    </View>
+
+  const counts = useMemo(
+    () => ({
+      all: childWords.length,
+      new: childWords.filter((w) => w.status === 'new').length,
+      learning: childWords.filter((w) => w.status === 'learning').length,
+      mastered: childWords.filter((w) => w.status === 'mastered').length,
+    }),
+    [childWords],
   );
-  
+
+  const filters: { key: Filter; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'new', label: 'New' },
+    { key: 'learning', label: 'Learning' },
+    { key: 'mastered', label: 'Mastered' },
+  ];
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.onSurface} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.onSurface }]}>Word Library</Text>
-        <View style={styles.placeholder} />
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Topbar */}
+      <View style={styles.topbar}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backChevron}>‹</Text>
+        </Pressable>
+        <Text style={styles.topbarTitle}>
+          {child?.name ? `${child.name}'s words` : 'Words'}
+        </Text>
+        <View style={styles.topbarRight} />
       </View>
-      
-      {/* Stats */}
-      <View style={styles.statsContainer}>
-        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.statValue, { color: colors.onSurface }]}>{stats.total}</Text>
-          <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Total</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.statValue, { color: '#3b82f6' }]}>{stats.new}</Text>
-          <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>New</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.statValue, { color: '#f59e0b' }]}>{stats.learning}</Text>
-          <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Learning</Text>
-        </View>
-        <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-          <Text style={[styles.statValue, { color: '#22c55e' }]}>{stats.mastered}</Text>
-          <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Mastered</Text>
-        </View>
-      </View>
-      
-      {/* Filter Tabs */}
-      <ScrollView 
-        horizontal 
+
+      {/* Filter pills */}
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterContainer}
+        contentContainerStyle={styles.pillRow}
       >
-        {(['all', 'new', 'learning', 'mastered'] as const).map((f) => (
-          <TouchableOpacity
-            key={f}
-            style={[
-              styles.filterTab,
-              { 
-                backgroundColor: filter === f ? colors.primary : colors.surface,
-              }
-            ]}
-            onPress={() => setFilter(f)}
-          >
-            <Text style={[
-              styles.filterTabText,
-              { color: filter === f ? colors.onPrimary : colors.onSurface }
-            ]}>
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </Text>
-            <Text style={[styles.filterCount, { color: filter === f ? 'rgba(255,255,255,0.7)' : colors.onSurfaceVariant }]}>
-              ({stats[f]})
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {filters.map((f) => {
+          const isActive = filter === f.key;
+          return (
+            <Pressable
+              key={f.key}
+              onPress={() => setFilter(f.key)}
+              style={[styles.pill, isActive && styles.pillActive]}
+            >
+              <Text
+                style={[
+                  styles.pillText,
+                  isActive ? styles.pillTextActive : styles.pillTextInactive,
+                ]}
+              >
+                {f.label} · {counts[f.key]}
+              </Text>
+            </Pressable>
+          );
+        })}
       </ScrollView>
-      
-      {/* Words List */}
+
       <FlatList
         data={filteredWords}
         keyExtractor={(item) => item.id}
-        renderItem={renderWordItem}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => {
+          const c = STATUS_BADGE_COLORS[item.status];
+          return (
+            <View style={styles.row}>
+              <Text style={styles.word}>{item.word}</Text>
+              <View style={[styles.badge, { backgroundColor: c.bg }]}>
+                <Text style={[styles.badgeText, { color: c.fg }]}>
+                  {STATUS_LABEL[item.status]}
+                </Text>
+              </View>
+            </View>
+          );
+        }}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Ionicons name="library-outline" size={64} color={colors.onSurfaceVariant} />
-            <Text style={[styles.emptyTitle, { color: colors.onSurface }]}>No words found</Text>
-            <Text style={[styles.emptyText, { color: colors.onSurfaceVariant }]}>
-              Upload a book or add words to get started.
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>No words yet</Text>
+            <Text style={styles.emptyMeta}>
+              Scan a book page or add a preset list to get started.
             </Text>
           </View>
         }
@@ -180,129 +130,107 @@ export default function LibraryScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
+  container: { flex: 1, backgroundColor: palette.cream },
+
+  topbar: {
+    backgroundColor: palette.paper,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    paddingTop: 8,
-  },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'center',
-    marginRight: 40,
-  },
-  placeholder: {
-    width: 40,
-  },
-  statsContainer: {
-    flexDirection: 'row',
     paddingHorizontal: 16,
-    gap: 8,
-    marginBottom: 16,
+    paddingVertical: 14,
+    gap: 12,
+    shadowColor: palette.navy,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
-  statCard: {
-    flex: 1,
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    backgroundColor: palette.cream,
     alignItems: 'center',
-    padding: 12,
+    justifyContent: 'center',
+  },
+  backChevron: {
+    fontSize: 26,
+    color: palette.navy,
+    fontFamily: fonts.bodyBold,
+    marginTop: -3,
+  },
+  topbarTitle: {
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 19,
+    color: palette.navy,
+    letterSpacing: -0.2,
+    flex: 1,
+  },
+  topbarRight: { width: 36 },
+
+  pillRow: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 6,
+    gap: 6,
+  },
+  pill: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: radius.md,
+    backgroundColor: palette.paper,
+    ...shadow.card,
+  },
+  pillActive: { backgroundColor: palette.navy },
+  pillText: { fontFamily: fonts.bodyBold, fontSize: 12 },
+  pillTextActive: { color: '#FFFFFF' },
+  pillTextInactive: { color: palette.slate },
+
+  list: { paddingHorizontal: 18, paddingTop: 6, paddingBottom: 24 },
+  row: {
+    backgroundColor: palette.paper,
+    borderRadius: radius.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    ...shadow.card,
+  },
+  word: {
+    fontFamily: fonts.contentSerifSemi,
+    fontSize: 18,
+    color: palette.navy,
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 12,
   },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700',
+  badgeText: {
+    fontFamily: fonts.bodyExtraBold,
+    fontSize: 10,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
-  statLabel: {
-    fontSize: 11,
-    marginTop: 2,
-  },
-  filterContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
+
+  empty: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 32,
     gap: 8,
   },
-  filterTab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  filterTabText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  filterCount: {
-    fontSize: 12,
-    marginLeft: 4,
-  },
-  list: {
-    padding: 16,
-    paddingTop: 0,
-  },
-  wordCard: {
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-  },
-  wordHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  wordText: {
-    fontSize: 20,
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  wordStats: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  statText: {
-    fontSize: 13,
-  },
-  masteredIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 8,
-  },
-  masteredText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    padding: 32,
-    marginTop: 32,
-  },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: 16,
+    fontFamily: fonts.contentSerifBold,
+    fontSize: 20,
+    color: palette.navy,
   },
-  emptyText: {
+  emptyMeta: {
+    fontFamily: fonts.body,
     fontSize: 14,
+    color: palette.slate,
     textAlign: 'center',
-    marginTop: 8,
+    lineHeight: 22,
   },
 });
