@@ -108,10 +108,23 @@ export default function FlashcardsScreen() {
     };
   }, [currentWord, showFeedback, isComplete, isPaused, timerSeconds]);
   
-  // Speak the word AFTER a correct answer — never on display. The kid
-  // attempts the word first; hearing it after is the reward + model.
+  // Scaffolding: model the pronunciation on display for the first two
+  // encounters of a word, then go silent so the kid is on their own.
+  // After a correct answer we only speak as reinforcement when we
+  // didn't already say it on display.
+  const wordAttempts = (currentWord?.masteryCorrectCount || 0) + (currentWord?.incorrectCount || 0);
+  const isLearning = wordAttempts < 2;
+
+  // On display: speak only if this is one of the first 2 encounters.
   useEffect(() => {
-    if (showFeedback === 'correct' && currentWord) {
+    if (!currentWord || showFeedback || isComplete || isPaused) return;
+    if (!isLearning) return;
+    speakWord(currentWord.word, child?.voicePreference);
+  }, [currentWord?.id, isLearning]);
+
+  // On correct: speak reinforcement only when we didn't pre-speak.
+  useEffect(() => {
+    if (showFeedback === 'correct' && currentWord && !isLearning) {
       speakWord(currentWord.word, child?.voicePreference);
     }
   }, [showFeedback, currentWord?.id]);
@@ -138,10 +151,12 @@ export default function FlashcardsScreen() {
     listenerRef.current = null;
     setIsListening(false);
 
-    // Small settle delay so the listener subscription is wired before
-    // we start (prevents missing the first speech result). No TTS plays
-    // up front anymore — kid attempts the word first.
-    const ttsBudgetMs = 250;
+    // If we just spoke the word (first 2 encounters), wait for the TTS
+    // to finish before opening the mic so we don't transcribe ourselves.
+    // Otherwise start listening almost immediately.
+    const ttsBudgetMs = isLearning
+      ? Math.min(2200, 600 + currentWord.word.length * 160)
+      : 250;
     const t = setTimeout(() => {
       if (showFeedback || isComplete || isPaused) return;
       setIsListening(true);
