@@ -32,37 +32,64 @@ async function pickBestVoiceId(): Promise<string | null> {
       cachedVoiceId = null;
       return null;
     }
-    const preferredNames = ['Samantha', 'Zoe', 'Ava', 'Allison', 'Susan', 'Karen', 'Moira'];
+
+    // Preferred names — Enhanced versions of these tend to be the best
+    // pre-installed voices on iOS. Karen (en-AU Enhanced) is often
+    // present and sounds noticeably warmer than the compact en-US Samantha.
+    const preferredNames = ['Zoe', 'Karen', 'Moira', 'Tessa', 'Daniel', 'Samantha', 'Ava', 'Allison'];
+
     const score = (v: Speech.Voice): number => {
       let s = 0;
       const id = (v.identifier || '').toLowerCase();
       const name = (v.name || '').toLowerCase();
-      if (Platform.OS === 'ios') {
-        if (id.includes('premium')) s += 100;
-        if (id.includes('siri')) s += 90;
-        if (id.includes('enhanced')) s += 70;
-      } else if (Platform.OS === 'android') {
-        if ((v as any).quality === Speech.VoiceQuality.Enhanced) s += 80;
-      }
       const lang = (v.language || '').toLowerCase();
-      if (lang.startsWith('en-us')) s += 40;
-      else if (lang.startsWith('en')) s += 20;
+
+      if (Platform.OS === 'ios') {
+        // Quality tier — way more important than name
+        if (id.includes('premium')) s += 1000;
+        if (id.includes('siri')) s += 800;
+        if (id.includes('enhanced')) s += 600;
+        // The compact tier is the robotic one — actively penalize so we
+        // pick a different speaker if any non-compact en voice exists.
+        if (id.includes('compact')) s -= 300;
+      } else if (Platform.OS === 'android') {
+        if ((v as any).quality === Speech.VoiceQuality.Enhanced) s += 600;
+      }
+
+      // Language preference
+      if (lang.startsWith('en-')) s += 100;
+      if (lang.startsWith('en-us')) s += 30;
+      else if (lang.startsWith('en-au') || lang.startsWith('en-gb') || lang.startsWith('en-ie')) s += 20;
+
+      // Speaker preference
       const idx = preferredNames.findIndex((n) => name.includes(n.toLowerCase()));
-      if (idx >= 0) s += 30 - idx;
+      if (idx >= 0) s += 50 - idx * 3;
       return s;
     };
+
     const englishOnly = voices.filter((v) => (v.language || '').toLowerCase().startsWith('en'));
-    const sorted = (englishOnly.length ? englishOnly : voices).slice().sort((a, b) => score(b) - score(a));
+    const pool = englishOnly.length ? englishOnly : voices;
+    const sorted = pool.slice().sort((a, b) => score(b) - score(a));
+
+    if (__DEV__) {
+      console.log(
+        '[speech] available voices (top 6):',
+        sorted.slice(0, 6).map((v) => `${v.name}/${v.language}/${v.identifier}/${score(v)}`),
+      );
+    }
     cachedVoiceId = sorted[0]?.identifier || null;
     return cachedVoiceId;
-  } catch {
+  } catch (err) {
+    console.warn('[speech] voice picker failed', err);
     cachedVoiceId = null;
     return null;
   }
 }
 
 export async function speak(text: string, options?: { rate?: number; onEnd?: () => void }): Promise<void> {
-  const rate = options?.rate ?? 0.85;
+  // Slower default for kids — 0.55-0.6 reads single words clearly without
+  // sounding sluggish for full sentences.
+  const rate = options?.rate ?? 0.55;
   const voiceId = await pickBestVoiceId();
 
   if (isSpeaking) {
@@ -74,7 +101,7 @@ export async function speak(text: string, options?: { rate?: number; onEnd?: () 
     isSpeaking = true;
     Speech.speak(text, {
       rate,
-      pitch: 1.05,
+      pitch: 1.0,
       voice: voiceId || undefined,
       onDone: () => {
         isSpeaking = false;

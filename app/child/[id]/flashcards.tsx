@@ -108,12 +108,13 @@ export default function FlashcardsScreen() {
     };
   }, [currentWord, showFeedback, isComplete, isPaused, timerSeconds]);
   
-  // Speak word when it changes
+  // Speak the word AFTER a correct answer — never on display. The kid
+  // attempts the word first; hearing it after is the reward + model.
   useEffect(() => {
-    if (currentWord && !showFeedback && !isComplete) {
+    if (showFeedback === 'correct' && currentWord) {
       speakWord(currentWord.word, child?.voicePreference);
     }
-  }, [currentWord, showFeedback, isComplete]);
+  }, [showFeedback, currentWord?.id]);
 
   // Check speech recognition availability
   useEffect(() => {
@@ -137,7 +138,10 @@ export default function FlashcardsScreen() {
     listenerRef.current = null;
     setIsListening(false);
 
-    const ttsBudgetMs = Math.min(2400, 400 + currentWord.word.length * 140);
+    // Small settle delay so the listener subscription is wired before
+    // we start (prevents missing the first speech result). No TTS plays
+    // up front anymore — kid attempts the word first.
+    const ttsBudgetMs = 250;
     const t = setTimeout(() => {
       if (showFeedback || isComplete || isPaused) return;
       setIsListening(true);
@@ -459,7 +463,27 @@ export default function FlashcardsScreen() {
           ]}>
             {currentWord.word}
           </Text>
-          
+
+          {/* Stuck? Tap the speaker to hear the word. */}
+          {!showFeedback && (
+            <TouchableOpacity
+              onPress={() => speakWord(currentWord.word, child?.voicePreference)}
+              style={{
+                marginTop: 14,
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: colors.surfaceVariant,
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: 0.7,
+              }}
+              activeOpacity={0.6}
+            >
+              <Ionicons name="volume-medium-outline" size={22} color={colors.onSurface} />
+            </TouchableOpacity>
+          )}
+
           {showFeedback === 'incorrect' && (
             <Text style={styles.tryAgainText}>Try again!</Text>
           )}
