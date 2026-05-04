@@ -298,9 +298,11 @@ export function startContinuousListening(
   let matchedIndices = new Set<number>();
   let stopped = false;
 
-  // Track the last transcript we processed so the same partial doesn't
-  // match the same target multiple times across rapid interim events.
-  let lastProcessedTranscript = '';
+  // iOS continuous recognition emits monotonically-growing transcripts
+  // ("blue" → "blue and" → "blue and big"). Track how many tokens of
+  // the current utterance we've already matched so we only consider the
+  // NEW tail on each event. Resets when the recognizer finalizes.
+  let prevWordCount = 0;
 
   const handleResult = (event: any) => {
     if (stopped) return;
@@ -310,19 +312,22 @@ export function startContinuousListening(
     const transcript: string = (top?.transcript || '').trim();
     const confidence: number = top?.confidence ?? 0;
     if (!transcript) return;
-    if (transcript === lastProcessedTranscript) return;
-    lastProcessedTranscript = transcript;
 
     onInterimResult(transcript);
 
-    // Each spoken token is allowed to save AT MOST ONE creature — the
-    // best matching unmatched target by length similarity. Prevents
-    // "blue" from also saving "big" because of fuzzy distance overlap.
-    const spoken = transcript.toLowerCase().split(/\s+/).filter(Boolean);
+    const currWords = transcript.toLowerCase().split(/\s+/).filter(Boolean);
+    const newWords = currWords.slice(prevWordCount);
+    prevWordCount = currWords.length;
+    if (event?.isFinal) prevWordCount = 0;
+
+    if (newWords.length === 0) return;
+
+    // Each NEW spoken token saves at most one creature — the unmatched
+    // target with the closest length similarity.
     const claimedTargets = new Set<number>();
     const allMatches: MultiWordMatch[] = [];
 
-    for (const s of spoken) {
+    for (const s of newWords) {
       let bestIdx = -1;
       let bestScore = -1;
       currentTargets.forEach((word, index) => {
