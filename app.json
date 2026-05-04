@@ -68,8 +68,8 @@
       },
       "supabaseUrl": "",
       "supabaseAnonKey": "",
-      "aiProxyUrl": "",
-      "aiProxyToken": ""
+      "aiProxyUrl": "https://noah-ai.benbrynildsen.workers.dev",
+      "aiProxyToken": "ujOpKsdGBvNW_sOOo6MYE3Ui6l_qdcB0"
     },
     "owner": "hansfather",
     "runtimeVersion": {
