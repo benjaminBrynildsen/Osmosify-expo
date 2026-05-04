@@ -119,17 +119,19 @@ async function handleTranscribe(env: Env, req: Request): Promise<Response> {
   const prompt = (incoming.get('prompt') as string) || '';
   const language = (incoming.get('language') as string) || 'en';
 
-  // Try Grok audio transcription first
+  // Try xAI Grok STT first. Endpoint: POST https://api.x.ai/v1/stt
+  // multipart/form-data, NO `model` field (single STT model), and the
+  // `file` field MUST be appended LAST per xAI's docs. Returns
+  // { text, language, duration, words }.
   if (env.XAI_API_KEY) {
     try {
       const grokForm = new FormData();
+      grokForm.set('language', language || 'en');
+      grokForm.set('format', 'true');
+      // file MUST be the last field
       grokForm.set('file', file, 'audio.m4a');
-      grokForm.set('model', 'grok-2-audio');
-      grokForm.set('language', language);
-      grokForm.set('response_format', 'json');
-      if (prompt) grokForm.set('prompt', prompt);
 
-      const grokRes = await fetch(`${XAI_BASE}/audio/transcriptions`, {
+      const grokRes = await fetch(`${XAI_BASE}/stt`, {
         method: 'POST',
         headers: { authorization: `Bearer ${env.XAI_API_KEY}` },
         body: grokForm,
@@ -141,10 +143,10 @@ async function handleTranscribe(env: Env, req: Request): Promise<Response> {
         return json({ text, source: 'grok' });
       } else {
         const errText = await grokRes.text();
-        console.log('grok transcribe failed', grokRes.status, errText.slice(0, 200));
+        console.log('grok stt failed', grokRes.status, errText.slice(0, 300));
       }
     } catch (e) {
-      console.log('grok transcribe threw', String(e));
+      console.log('grok stt threw', String(e));
     }
   }
 
