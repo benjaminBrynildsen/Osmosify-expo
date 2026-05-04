@@ -130,6 +130,29 @@ export async function requestSpeechPermission(): Promise<boolean> {
   }
 }
 
+/** Set up iOS audio session so recording can run alongside TTS without
+ *  one killing the other. Must be called before each start(). No-op on Android. */
+function configureIosAudioForRecognition() {
+  if (!ExpoSpeechRecognition || Platform.OS !== 'ios') return;
+  try {
+    ExpoSpeechRecognition.setCategoryIOS?.({
+      category: 'playAndRecord',
+      categoryOptions: ['defaultToSpeaker', 'allowBluetooth'],
+      mode: 'measurement',
+    });
+  } catch (e) {
+    console.warn('[speech] setCategoryIOS failed', e);
+  }
+}
+
+/** Stop any in-flight TTS so the recognizer doesn't pick up our own voice. */
+async function quietTtsBeforeListening() {
+  try {
+    await Speech.stop();
+  } catch {}
+  isSpeaking = false;
+}
+
 export function startListening(
   targetWord: string,
   onMatch: (result: RecognitionResult) => void,
@@ -138,9 +161,25 @@ export function startListening(
   onEnd: () => void
 ): { stop: () => void; updateTargetWord: (newWord: string) => void } {
   if (!ExpoSpeechRecognition) {
-    onError('Speech recognition not available');
+    console.warn('[speech] startListening: native module not loaded');
+    onError('Speech recognition not available on this device');
     onEnd();
     return { stop: () => {}, updateTargetWord: () => {} };
+  }
+
+  // Native module is present — verify recognition is actually available.
+  try {
+    if (typeof ExpoSpeechRecognition.isRecognitionAvailable === 'function') {
+      const ok = ExpoSpeechRecognition.isRecognitionAvailable();
+      if (!ok) {
+        console.warn('[speech] isRecognitionAvailable -> false');
+        onError('Speech recognition unavailable on this device');
+        onEnd();
+        return { stop: () => {}, updateTargetWord: () => {} };
+      }
+    }
+  } catch (e) {
+    console.warn('[speech] isRecognitionAvailable check threw', e);
   }
 
   let currentTarget = targetWord;
@@ -148,48 +187,53 @@ export function startListening(
 
   const handleResult = (event: any) => {
     if (stopped) return;
-    const results = event.results;
-    if (!results || results.length === 0) return;
+    // Correct shape: { isFinal: boolean, results: [{transcript, confidence}] }
+    const results = event?.results;
+    if (!Array.isArray(results) || results.length === 0) return;
+    const top = results[0]; // best alternative
+    const transcript: string = top?.transcript || '';
+    const confidence: number = top?.confidence ?? 0;
+    if (!transcript) return;
 
-    const lastResult = results[results.length - 1];
-    if (!lastResult || lastResult.length === 0) return;
-
-    const transcript = lastResult[0].transcript || '';
-    const confidence = lastResult[0].confidence || 0;
     const isMatch = checkWordMatch(transcript, currentTarget);
-
     const result: RecognitionResult = { transcript, confidence, isMatch };
 
     if (isMatch) {
       onMatch(result);
-    } else if (lastResult.isFinal) {
+    } else if (event?.isFinal) {
       onNoMatch(result);
     }
   };
 
+  configureIosAudioForRecognition();
+  quietTtsBeforeListening();
+
+  let resultSub: any, errorSub: any, endSub: any;
   try {
+    // Subscribe FIRST, then start — otherwise we may miss the first event.
+    resultSub = ExpoSpeechRecognition.addListener('result', handleResult);
+    errorSub = ExpoSpeechRecognition.addListener('error', (e: any) => {
+      console.warn('[speech] recognition error:', e?.error, e?.message);
+      if (!stopped) onError(e?.error || e?.message || 'Recognition error');
+    });
+    endSub = ExpoSpeechRecognition.addListener('end', () => {
+      if (!stopped) onEnd();
+    });
+
     ExpoSpeechRecognition.start({
       lang: 'en-US',
       interimResults: true,
       maxAlternatives: 3,
       continuous: false,
-    });
-
-    // Set up event listeners via the native module
-    const resultSub = ExpoSpeechRecognition.addListener('result', handleResult);
-    const errorSub = ExpoSpeechRecognition.addListener('error', (e: any) => {
-      if (!stopped) onError(e.error || 'Recognition error');
-    });
-    const endSub = ExpoSpeechRecognition.addListener('end', () => {
-      if (!stopped) onEnd();
+      requiresOnDeviceRecognition: false,
+      contextualStrings: [targetWord],
+      addsPunctuation: false,
     });
 
     return {
       stop: () => {
         stopped = true;
-        try {
-          ExpoSpeechRecognition.stop();
-        } catch {}
+        try { ExpoSpeechRecognition.stop(); } catch {}
         resultSub?.remove?.();
         errorSub?.remove?.();
         endSub?.remove?.();
@@ -199,6 +243,10 @@ export function startListening(
       },
     };
   } catch (err: any) {
+    console.warn('[speech] start threw:', err);
+    resultSub?.remove?.();
+    errorSub?.remove?.();
+    endSub?.remove?.();
     onError(err?.message || 'Failed to start recognition');
     onEnd();
     return { stop: () => {}, updateTargetWord: () => {} };
@@ -225,14 +273,12 @@ export function startContinuousListening(
 
   const handleResult = (event: any) => {
     if (stopped) return;
-    const results = event.results;
-    if (!results || results.length === 0) return;
-
-    const lastResult = results[results.length - 1];
-    if (!lastResult || lastResult.length === 0) return;
-
-    const transcript = lastResult[0].transcript || '';
-    const confidence = lastResult[0].confidence || 0;
+    const results = event?.results;
+    if (!Array.isArray(results) || results.length === 0) return;
+    const top = results[0];
+    const transcript: string = top?.transcript || '';
+    const confidence: number = top?.confidence ?? 0;
+    if (!transcript) return;
 
     onInterimResult(transcript);
 
@@ -243,8 +289,7 @@ export function startContinuousListening(
       if (matchedIndices.has(index)) return;
       for (const s of spoken) {
         if (checkWordMatch(s, word)) {
-          const match: MultiWordMatch = { word, index, transcript, confidence };
-          allMatches.push(match);
+          allMatches.push({ word, index, transcript, confidence });
           break;
         }
       }
@@ -264,40 +309,48 @@ export function startContinuousListening(
     }
   };
 
+  configureIosAudioForRecognition();
+  quietTtsBeforeListening();
+
+  let resultSub: any, errorSub: any, endSub: any;
   try {
+    resultSub = ExpoSpeechRecognition.addListener('result', handleResult);
+    errorSub = ExpoSpeechRecognition.addListener('error', (e: any) => {
+      console.warn('[speech] continuous error:', e?.error, e?.message);
+      if (!stopped) onError(e?.error || e?.message || 'Recognition error');
+    });
+    endSub = ExpoSpeechRecognition.addListener('end', () => {
+      if (stopped) return;
+      // Auto-restart for continuous mode
+      try {
+        configureIosAudioForRecognition();
+        ExpoSpeechRecognition.start({
+          lang: 'en-US',
+          interimResults: true,
+          maxAlternatives: 3,
+          continuous: true,
+          requiresOnDeviceRecognition: false,
+        });
+      } catch (e) {
+        console.warn('[speech] restart failed', e);
+        onEnd();
+      }
+    });
+
     ExpoSpeechRecognition.start({
       lang: 'en-US',
       interimResults: true,
       maxAlternatives: 3,
       continuous: true,
-    });
-
-    const resultSub = ExpoSpeechRecognition.addListener('result', handleResult);
-    const errorSub = ExpoSpeechRecognition.addListener('error', (e: any) => {
-      if (!stopped) onError(e.error || 'Recognition error');
-    });
-    const endSub = ExpoSpeechRecognition.addListener('end', () => {
-      if (!stopped) {
-        // Restart continuous listening
-        try {
-          ExpoSpeechRecognition.start({
-            lang: 'en-US',
-            interimResults: true,
-            maxAlternatives: 3,
-            continuous: true,
-          });
-        } catch {
-          onEnd();
-        }
-      }
+      requiresOnDeviceRecognition: false,
+      contextualStrings: targetWords,
+      addsPunctuation: false,
     });
 
     return {
       stop: () => {
         stopped = true;
-        try {
-          ExpoSpeechRecognition.stop();
-        } catch {}
+        try { ExpoSpeechRecognition.stop(); } catch {}
         resultSub?.remove?.();
         errorSub?.remove?.();
         endSub?.remove?.();
@@ -308,6 +361,10 @@ export function startContinuousListening(
       },
     };
   } catch (err: any) {
+    console.warn('[speech] continuous start threw:', err);
+    resultSub?.remove?.();
+    errorSub?.remove?.();
+    endSub?.remove?.();
     onError(err?.message || 'Failed to start recognition');
     onEnd();
     return { stop: () => {}, updateTargetWords: () => {} };

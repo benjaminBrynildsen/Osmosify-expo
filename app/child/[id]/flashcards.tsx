@@ -128,7 +128,8 @@ export default function FlashcardsScreen() {
   }, []);
 
   // Auto-start listening as soon as a new word displays — no tap needed.
-  // Wait a beat after the TTS so we don't capture our own voice.
+  // Wait until after the TTS so we don't capture our own voice. Word
+  // length × ~140ms + 400ms baseline gives the speak() time to finish.
   useEffect(() => {
     if (!speechAvailable || !currentWord || showFeedback || isComplete || isPaused) return;
     // Stop any prior listener from a previous word before starting a new one
@@ -136,6 +137,7 @@ export default function FlashcardsScreen() {
     listenerRef.current = null;
     setIsListening(false);
 
+    const ttsBudgetMs = Math.min(2400, 400 + currentWord.word.length * 140);
     const t = setTimeout(() => {
       if (showFeedback || isComplete || isPaused) return;
       setIsListening(true);
@@ -164,7 +166,7 @@ export default function FlashcardsScreen() {
           listenerRef.current = null;
         },
       );
-    }, 700);
+    }, ttsBudgetMs);
     return () => {
       clearTimeout(t);
       listenerRef.current?.stop();
