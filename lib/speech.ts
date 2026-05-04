@@ -298,29 +298,55 @@ export function startContinuousListening(
   let matchedIndices = new Set<number>();
   let stopped = false;
 
+  // Track the last transcript we processed so the same partial doesn't
+  // match the same target multiple times across rapid interim events.
+  let lastProcessedTranscript = '';
+
   const handleResult = (event: any) => {
     if (stopped) return;
     const results = event?.results;
     if (!Array.isArray(results) || results.length === 0) return;
     const top = results[0];
-    const transcript: string = top?.transcript || '';
+    const transcript: string = (top?.transcript || '').trim();
     const confidence: number = top?.confidence ?? 0;
     if (!transcript) return;
+    if (transcript === lastProcessedTranscript) return;
+    lastProcessedTranscript = transcript;
 
     onInterimResult(transcript);
 
+    // Each spoken token is allowed to save AT MOST ONE creature — the
+    // best matching unmatched target by length similarity. Prevents
+    // "blue" from also saving "big" because of fuzzy distance overlap.
+    const spoken = transcript.toLowerCase().split(/\s+/).filter(Boolean);
+    const claimedTargets = new Set<number>();
     const allMatches: MultiWordMatch[] = [];
-    const spoken = transcript.toLowerCase().split(/\s+/);
 
-    currentTargets.forEach((word, index) => {
-      if (matchedIndices.has(index)) return;
-      for (const s of spoken) {
-        if (checkWordMatch(s, word)) {
-          allMatches.push({ word, index, transcript, confidence });
-          break;
+    for (const s of spoken) {
+      let bestIdx = -1;
+      let bestScore = -1;
+      currentTargets.forEach((word, index) => {
+        if (matchedIndices.has(index) || claimedTargets.has(index)) return;
+        if (!checkWordMatch(s, word)) return;
+        // Score by length similarity — prefer the target whose length
+        // matches the spoken token best.
+        const lenSim =
+          Math.min(s.length, word.length) / Math.max(s.length, word.length);
+        if (lenSim > bestScore) {
+          bestScore = lenSim;
+          bestIdx = index;
         }
+      });
+      if (bestIdx >= 0) {
+        claimedTargets.add(bestIdx);
+        allMatches.push({
+          word: currentTargets[bestIdx],
+          index: bestIdx,
+          transcript,
+          confidence,
+        });
       }
-    });
+    }
 
     if (allMatches.length > 0 && onAllMatches) {
       onAllMatches(allMatches, (wordIndex: number) => {
@@ -473,25 +499,54 @@ function levenshteinDistance(a: string, b: string): number {
   return matrix[b.length][a.length];
 }
 
+/**
+ * Strict-by-default match. Tighter than the original 35% Levenshtein —
+ * for short words (the bulk of early-reader vocab) we require exact
+ * matches only, since 1 character of slop is the difference between
+ * "and" / "ant" / "any" / "an".
+ *
+ *   length 1-4  : exact or homophone only
+ *   length 5-6  : exact, homophone, or distance 1
+ *   length 7+   : exact, homophone, or distance ≤ ~20% rounded down
+ *
+ * Plus the spoken token's length must be within 60% of the target — a
+ * 1-char "a" should never be considered a fuzzy match for "away".
+ */
 export function checkWordMatch(spoken: string, target: string): boolean {
   const cleanSpoken = spoken.replace(/[.,!?'"]/g, '').trim().toLowerCase();
   const cleanTarget = target.replace(/[.,!?'"]/g, '').trim().toLowerCase();
+  if (!cleanSpoken || !cleanTarget) return false;
 
   if (cleanSpoken === cleanTarget) return true;
   if (areHomophones(cleanSpoken, cleanTarget)) return true;
 
+  // The spoken phrase may contain the target as one of its words
   const spokenWords = cleanSpoken.split(/\s+/);
   if (spokenWords.includes(cleanTarget)) return true;
-
   for (const word of spokenWords) {
     if (areHomophones(word, cleanTarget)) return true;
   }
 
-  const distance = levenshteinDistance(cleanSpoken, cleanTarget);
-  const maxAllowedDistance = Math.max(1, Math.floor(cleanTarget.length * 0.35));
-  if (distance <= maxAllowedDistance) return true;
+  // Pick the spoken token with the best length match against the target —
+  // fuzzy compare against THAT, not the full transcript.
+  let bestSpoken = cleanSpoken;
+  if (spokenWords.length > 1) {
+    bestSpoken = spokenWords.reduce((a, b) =>
+      Math.abs(b.length - cleanTarget.length) < Math.abs(a.length - cleanTarget.length) ? b : a,
+    );
+  }
 
-  return false;
+  const tlen = cleanTarget.length;
+  // Reject if length dramatically different
+  const lenRatio = Math.min(bestSpoken.length, tlen) / Math.max(bestSpoken.length, tlen);
+  if (lenRatio < 0.6) return false;
+
+  // Short words: no Levenshtein slack at all
+  if (tlen <= 4) return false;
+
+  const distance = levenshteinDistance(bestSpoken, cleanTarget);
+  if (tlen <= 6) return distance <= 1;
+  return distance <= Math.floor(tlen * 0.2);
 }
 
 export function playSuccessSound(): void {
