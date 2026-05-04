@@ -18,7 +18,13 @@ import {
   isSpeechRecognitionSupported,
   requestSpeechPermission,
   startListening,
+  checkWordMatch,
 } from '../../../lib/speech';
+import {
+  isCloudSpeechAvailable,
+  transcribeOnce,
+  ensureRecordingPermission,
+} from '../../../lib/cloudSpeech';
 import { Ionicons } from '@expo/vector-icons';
 import type { Word } from '../../../types';
 
@@ -141,40 +147,63 @@ export default function FlashcardsScreen() {
     }
   }, []);
 
-  // Auto-start listening as soon as a new word displays — no tap needed.
-  // Wait until after the TTS so we don't capture our own voice. Word
-  // length × ~140ms + 400ms baseline gives the speak() time to finish.
+  // Auto-start listening as soon as a new word displays. Prefers the
+  // cloud Whisper/Grok-2-audio path (way better for kid voices) when
+  // the AI proxy is configured; falls back to on-device SFSpeechRecognizer.
+  const cloudPathRef = useRef<{ cancelled: boolean } | null>(null);
   useEffect(() => {
-    if (!speechAvailable || !currentWord || showFeedback || isComplete || isPaused) return;
-    // Stop any prior listener from a previous word before starting a new one
+    if (!currentWord || showFeedback || isComplete || isPaused) return;
+    // Stop any prior listener
     listenerRef.current?.stop();
     listenerRef.current = null;
+    cloudPathRef.current = { cancelled: true };
     setIsListening(false);
 
-    // If we just spoke the word (first 2 encounters), wait for the TTS
-    // to finish before opening the mic so we don't transcribe ourselves.
-    // Otherwise start listening almost immediately.
     const ttsBudgetMs = isLearning
       ? Math.min(2200, 600 + currentWord.word.length * 160)
       : 250;
+
+    // Cloud path
+    if (isCloudSpeechAvailable()) {
+      const ctx = { cancelled: false };
+      cloudPathRef.current = ctx;
+      const t = setTimeout(async () => {
+        if (ctx.cancelled || showFeedback || isComplete || isPaused) return;
+        setIsListening(true);
+        setTranscript('');
+        const result = await transcribeOnce(currentWord.word, 4);
+        if (ctx.cancelled || showFeedback || isComplete || isPaused) return;
+        if (result) {
+          setTranscript(result.text);
+          if (checkWordMatch(result.text, currentWord.word)) {
+            console.log('[flashcards] cloud match', result.text);
+            handleAnswer(true);
+          }
+        }
+        setIsListening(false);
+      }, ttsBudgetMs);
+      return () => {
+        clearTimeout(t);
+        ctx.cancelled = true;
+      };
+    }
+
+    // On-device fallback path
+    if (!speechAvailable) return;
     const t = setTimeout(() => {
       if (showFeedback || isComplete || isPaused) return;
       setIsListening(true);
       setTranscript('');
-      console.log('[flashcards] starting listener for', currentWord.word);
       listenerRef.current = startListening(
         currentWord.word,
         (result) => {
-          console.log('[flashcards] match!', result.transcript);
           setTranscript(result.transcript);
           listenerRef.current?.stop();
           listenerRef.current = null;
           setIsListening(false);
           handleAnswer(true);
         },
-        (result) => {
-          setTranscript(result.transcript);
-        },
+        (result) => setTranscript(result.transcript),
         (err) => {
           console.warn('[flashcards] listener error:', err);
           setIsListening(false);

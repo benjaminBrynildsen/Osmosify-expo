@@ -17,11 +17,16 @@ import {
   startContinuousListening,
   isSpeechRecognitionSupported,
   requestSpeechPermission,
+  checkWordMatch,
 } from '../../../lib/speech';
 import { Ionicons } from '@expo/vector-icons';
 import { AnimatedLava } from '../../../components/lava/AnimatedLava';
 import { Embers } from '../../../components/lava/Embers';
 import { Creature as AnimatedCreature } from '../../../components/lava/Creature';
+import {
+  isCloudSpeechAvailable,
+  startCloudChunkedListening,
+} from '../../../lib/cloudSpeech';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const GAME_HEIGHT = SCREEN_HEIGHT - 220;
@@ -160,9 +165,9 @@ export default function LavaLettersScreen() {
 
   const [speechReady, setSpeechReady] = useState(false);
 
-  // Continuous speech listener — when the kid says a creature's word,
-  // save that creature. Replaces the tap-to-save mechanic. If speech
-  // recognition is unavailable, fall back to tap-to-save below.
+  // Continuous speech listener. Prefers cloud Whisper/Grok-2-audio
+  // when the AI proxy is configured (way better for kid voices),
+  // falls back to on-device SFSpeechRecognizer.
   useEffect(() => {
     if (gameState !== 'playing') {
       listenerRef.current?.stop();
@@ -170,20 +175,55 @@ export default function LavaLettersScreen() {
       setSpeechReady(false);
       return;
     }
+
+    const handleTranscript = (text: string) => {
+      // Match each word in the transcript against the lowest unsaved
+      // creature whose word matches.
+      const tokens = text.toLowerCase().split(/\s+/).filter(Boolean);
+      const claimed = new Set<number>();
+      tokens.forEach((tok) => {
+        const candidate = creaturesRef.current
+          .filter((c, i) => !c.saved && !claimed.has(c.id) && checkWordMatch(tok, c.word))
+          .sort((a, b) => b.y - a.y)[0];
+        if (candidate) {
+          claimed.add(candidate.id);
+          handleSaveCreatureRef.current(candidate);
+        }
+      });
+    };
+
+    // Cloud path
+    if (isCloudSpeechAvailable()) {
+      console.log('[lava] using CLOUD speech (Grok/Whisper)');
+      const handle = startCloudChunkedListening(
+        () =>
+          creaturesRef.current
+            .filter((c) => !c.saved)
+            .map((c) => c.word)
+            .join(' '),
+        handleTranscript,
+        1.6,
+      );
+      listenerRef.current = { stop: handle.stop, updateTargetWords: () => {} } as any;
+      setSpeechReady(true);
+      return () => {
+        handle.stop();
+        setSpeechReady(false);
+      };
+    }
+
+    // On-device fallback
     if (!isSpeechRecognitionSupported()) {
-      console.log('[lava] speech recognition NOT supported — tap fallback enabled');
+      console.log('[lava] no speech recognition available');
       return;
     }
     let cancelled = false;
     requestSpeechPermission().then((granted) => {
-      console.log('[lava] mic permission granted:', granted);
       if (!granted || cancelled) return;
       const onScreenWords = creaturesRef.current.filter((c) => !c.saved).map((c) => c.word);
-      console.log('[lava] starting continuous listener for', onScreenWords);
       listenerRef.current = startContinuousListening(
         onScreenWords,
         (match) => {
-          console.log('[lava] match!', match.word, match.transcript);
           const candidates = creaturesRef.current
             .filter((c) => !c.saved && c.word.toLowerCase() === match.word.toLowerCase())
             .sort((a, b) => b.y - a.y);
